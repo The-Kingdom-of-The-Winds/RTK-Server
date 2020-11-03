@@ -134,7 +134,9 @@ luac.out
 # Maps
 !/rtkmaps/**/*.map
 
-# Database backups
-/database/history/*.sql
+# ddraw.dll
+!ddraw.dll
 
-docker
+# Database
+/database/history/*.sql
+/database/data

@@ -3166,7 +3166,7 @@ int sl_loaddir(char* dirpath, lua_State* state) {
 	char path[512];
 	char dirpath_tail = dirpath[strlen(dirpath) - 1];
 	int dirpath_hasslash = dirpath_tail == '/' || dirpath_tail == '\\';
-	while (0 != (dir_entry = readdir(dir))) { // *** this condition is never met when it runs in docker, so the while loop is never executed and no lua files are loaded ***
+	while (0 != (dir_entry = readdir(dir))) { // This does not work for directories in mounted volumes shared between host and container when using Docker
 		char* filename = dir_entry->d_name;
 		int filename_len = strlen(filename);
 		// ignore special files

@@ -1,27 +1,5 @@
-version: '3.3'
+version: '3.4'
 services:
-  server:
-    image: rtk-server:latest
-    build:
-      context: .
-      dockerfile: Dockerfile
-    command: tail -F /dev/null # TODO: Add commands to automatically build/run servers; for now you have to bash into the container to start them
-    restart: always
-    environment:
-      - MYSQL_ROOT_PASSWORD=changeMe
-      - MYSQL_USER=rtk
-      - MYSQL_PASSWORD=changeMe
-      - MYSQL_DATABASE=RTK
-    ports:
-      - 2000:2000
-      - 2001:2001
-      - 2005:2005
-    volumes:
-      - ./rtk:/root/rtk
-      - ./rtklua:/root/rtklua
-      - ./rtkmaps:/root/rtkmaps
-    # TODO: Add volume for automated database backups
-
   database:
     image: mysql/mysql-server:5.7
     restart: always
@@ -34,4 +12,58 @@ services:
       - 3306:3306
     volumes:
       - ./database/scripts:/docker-entrypoint-initdb.d # Every script in docker-entrypoint-initdb.d is executed in alphabetical order as soon as the container starts
-      - ./docker/mysql/data:/var/lib/mysql
+      - ./database/data:/var/lib/mysql
+
+  # login:
+  #   build:
+  #     context: .
+  #     target: login-server
+  #   working_dir: /home/rtk
+  #   command: ./login-server
+  #   restart: always
+  #   environment:
+  #     - MYSQL_ROOT_PASSWORD=changeMe
+  #     - MYSQL_USER=rtk
+  #     - MYSQL_PASSWORD=changeMe
+  #     - MYSQL_DATABASE=RTK
+  #   ports:
+  #     - 2000:2000
+  #   depends_on:
+  #     - database
+  
+  # char:
+  #   build:
+  #     context: .
+  #     target: char-server
+  #   working_dir: /home/rtk
+  #   command: ./char-server
+  #   restart: always
+  #   environment:
+  #     - MYSQL_ROOT_PASSWORD=changeMe
+  #     - MYSQL_USER=rtk
+  #     - MYSQL_PASSWORD=changeMe
+  #     - MYSQL_DATABASE=RTK
+  #   ports:
+  #     - 2005:2005
+  #   depends_on:
+  #     - login
+  
+  map:
+    build:
+      context: .
+      target: map-server
+    working_dir: /home/rtk
+    command: tail -F /dev/null
+    # command: ./map-server
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=changeMe
+      - MYSQL_USER=rtk
+      - MYSQL_PASSWORD=changeMe
+      - MYSQL_DATABASE=RTK
+    ports:
+      - 2000:2000
+      - 2001:2001
+      - 2005:2005
+    # depends_on:
+    #   - char
