@@ -139,8 +139,3 @@ luac.out
 
 # Database backups
 /database/history/*.sql
-
-#config files
-/rtk/conf/char.conf
-/rtk/conf/map.conf
-/rtk/conf/save.conf
