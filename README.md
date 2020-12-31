@@ -1,6 +1,8 @@
 # Local RTK (Classic 5.x) Server Setup
 This document describes how to set up a local RTK (Classic 5.x) server on a PC running `Windows 10` and using [VirtualBox 6.1.8](https://download.virtualbox.org/virtualbox/6.1.8/VirtualBox-6.1.8-137981-Win.exe). Any deviations from that setup may result in procedural discrepancies.
 
+***there are still a lot of functions/packets that need to be fixed, and I don't think I have enough time to fix them all alone so contributions are highly welcomed and appreciated. - Fath***
+
 ***
 
 ## 1) Create a virtual machine
@@ -148,9 +150,12 @@ _Note: You must rebuild the servers any time you make changes to the C code._
 ***
 
 ## 9) Configure the client
-Client configuration is beyond the scope of this document. For past private servers, developers would do something like package up the 7.50 version of the original client and use a `ddraw.dll` like the one found in this repository to redirect the game to the server at `tk0.retrotk.com`.
+~~Client configuration is beyond the scope of this document. For past private servers, developers would do something like package up the 7.50 version of the original client and use a `ddraw.dll` like the one found in this repository to redirect the game to the server at `tk0.retrotk.com`.
 
-Each player would then have to use some Windows hosts file editor to add that host and set the IP address for it. In the context of this document, that IP address would be the one found in step 5.8. Then as long as the player had the `ddraw.dll` in the same folder as the client executable, it would redirect the game to connect to the private server when playing.
+Each player would then have to use some Windows hosts file editor to add that host and set the IP address for it. In the context of this document, that IP address would be the one found in step 5.8. Then as long as the player had the `ddraw.dll` in the same folder as the client executable, it would redirect the game to connect to the private server when playing.~~
+
+This RTK (Classic) server should compatible with client version 5.x. 
+Tested client: 5.22 & 5.33.
 
 You should not do this. Altering the original client in any way violates its EULA, and distribution of a client that is the intellectual property of another entity could be copyright infringement.
 
