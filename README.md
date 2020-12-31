@@ -1,5 +1,5 @@
-# Local RTK Server Setup
-This document describes how to set up a local RTK server on a PC running `Windows 10` and using [VirtualBox 6.1.8](https://download.virtualbox.org/virtualbox/6.1.8/VirtualBox-6.1.8-137981-Win.exe). Any deviations from that setup may result in procedural discrepancies.
+# Local RTK (Classic 5.x) Server Setup
+This document describes how to set up a local RTK (Classic 5.x) server on a PC running `Windows 10` and using [VirtualBox 6.1.8](https://download.virtualbox.org/virtualbox/6.1.8/VirtualBox-6.1.8-137981-Win.exe). Any deviations from that setup may result in procedural discrepancies.
 
 ***
 
@@ -51,7 +51,9 @@ This document describes how to set up a local RTK server on a PC running `Window
 
 ***
 
-## 3) Install required packages
+## 3.1) Install required packages
+
+#### (32-bit i386)
 
 1. Login as `gm` using the password that you set during the previous setup
 2. At the `gm@rtk:~$` prompt, enter `sudo apt update`
@@ -60,6 +62,15 @@ This document describes how to set up a local RTK server on a PC running `Window
 4. Enter `sudo apt-get install build-essential make mysql-server libmysqlclient20 libmysqlclient-dev lua5.1 liblua5.1 liblua5.1-dev` and then `y` to confirm
    - Enter and confirm any password of your choosing for the `MySQL "root" user` when prompted
 5. In the `VirtualBox` menu bar, select `Machine` &rarr; `ACPI Shutdown` to turn off your VM
+
+#### (64-bit amd64)
+
+1. Login as `gm` using the password that you set during the previous setup
+2. `sudo dpkg --add-architecture i386`
+3. `sudo apt-get -y dist-upgrade`
+4. `sudo apt-get update`
+5. `sudo apt-get install -y gcc-multilib libmysqlclient-dev:i386 liblua5.1-dev:i386`
+6. In the `VirtualBox` menu bar, select `Machine` &rarr; `ACPI Shutdown` to turn off your VM
 
 ***
 
@@ -100,11 +111,12 @@ This document describes how to set up a local RTK server on a PC running `Window
 ***
 
 ## 6) Update the IP address in the RTK source
-1. In Windows, use any text editor to open the `/rtk/conf/map.conf` file from your copy of the RTK repository
+1. In Windows, use any text editor to open the `/rtk/conf/map.conf.example` file from your copy of the RTK repository and rename to `/rtk/conf/map.conf`
 2. Edit the values for `map_ip` and `loginip` to use the IP address obtained in step 5.8
    - e.g. `map_ip: 192.168.56.104`
    - e.g. `loginip: 192.168.56.104`
-3. Save the file, and the update will automatically sync to your VM via the shared folder configured in step 4
+3. Rename `/rtk/conf/char.conf.example` to `/rtk/conf/char.conf` then add your database information.
+4. Save the file, and the update will automatically sync to your VM via the shared folder configured in step 4
 
 ***
 
