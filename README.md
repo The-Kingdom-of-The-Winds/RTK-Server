@@ -150,12 +150,15 @@ _Note: You must rebuild the servers any time you make changes to the C code._
 ***
 
 ## 9) Configure the client
-~~Client configuration is beyond the scope of this document. For past private servers, developers would do something like package up the 7.50 version of the original client and use a `ddraw.dll` like the one found in this repository to redirect the game to the server at `tk0.retrotk.com`.
+~~Client configuration is beyond the scope of this document. For past private servers, developers would do something like package up the 7.50 version of the original client and use a `ddraw.dll` like the one found in this repository to redirect the game to the server at `tk0.retrotk.com`.~~
 
-Each player would then have to use some Windows hosts file editor to add that host and set the IP address for it. In the context of this document, that IP address would be the one found in step 5.8. Then as long as the player had the `ddraw.dll` in the same folder as the client executable, it would redirect the game to connect to the private server when playing.~~
+~~Each player would then have to use some Windows hosts file editor to add that host and set the IP address for it. In the context of this document, that IP address would be the one found in step 5.8. Then as long as the player had the `ddraw.dll` in the same folder as the client executable, it would redirect the game to connect to the private server when playing.~~
 
 This RTK (Classic) server should compatible with client version 5.x. 
 Tested client: 5.22 & 5.33.
+
+Client 5.x doesn't need ddraw.dll to connect to the server. ddraw.dll included in this repo is for Windowed Mode. To connect the client to server, you have to create a client shortcut, and then open the shortcut properties, add your login server IP Address and PORT in the end of target value.
+Example: `"X:\RTK-client\client.exe" 192.168.1.100 2000`
 
 You should not do this. Altering the original client in any way violates its EULA, and distribution of a client that is the intellectual property of another entity could be copyright infringement.
 
