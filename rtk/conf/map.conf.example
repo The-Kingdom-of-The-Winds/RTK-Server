@@ -4,10 +4,10 @@
 // IP address used to connect to the server. You must use a public IP address
 // if you want the server to be accessible remotely.
 
-map_ip: 192.168.7.101
+map_ip: 192.168.56.104
 map_port: 2001
 
-loginip: 192.168.7.101
+loginip: 192.168.56.104
 loginport: 2000
 
 //logfile

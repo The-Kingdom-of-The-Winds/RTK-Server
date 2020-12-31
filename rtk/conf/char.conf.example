@@ -5,9 +5,9 @@
 //currently only support mysql
 sql_ip: 127.0.0.1
 sql_port: 3306
-sql_id: root
-sql_pw: asdqwe
-sql_db: rtk
+sql_id: rtk
+sql_pw: changeMe
+sql_db: RTK
 
 //logfile
 char_log: logs/char.log

@@ -12,6 +12,6 @@ char* populate_table(const char*, char*, int);
 int set_packet_indexes(unsigned char*);
 char* generate_key2(unsigned char*, char*, char*, int);
 char* generate_key(const char*, char*, int);
-void crypt(char*);
-void crypt2(char*, char*);
+// void crypt(char*);
+// void crypt2(char*, char*);
 #endif

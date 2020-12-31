@@ -176,7 +176,7 @@ int intif_mmo_tosd(int fd, struct mmo_charstatus* p) {
 
 	session[fd]->session_data = sd;
 
-	populate_table(&(sd->status.name), &(sd->EncHash), sizeof(sd->EncHash));
+	//populate_table(&(sd->status.name), &(sd->EncHash), sizeof(sd->EncHash));
 	sd->bl.id = sd->status.id;
 	sd->bl.prev = sd->bl.next = NULL;
 

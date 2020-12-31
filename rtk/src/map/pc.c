@@ -1970,362 +1970,153 @@ int pc_changeitem(USER* sd, int id1, int id2) {
 	return 0;
 }
 
-int pc_useitem(USER* sd, int id) {
+int pc_useitem(USER *sd, int id) {
 	char buf[255];
 	char escape[255];
 
 	if (!sd->status.inventory[id].id)
 		return 0;
 
-	if (sd->status.inventory[id].owner) {
-		if (sd->status.inventory[id].owner != sd->status.id) {
-			clif_sendminitext(sd, "You cannot use this, it does not belong to you!");
-			return 0;
-		}
-	}
+	// if(sd->status.inventory[id].owner_id){
+	// 	if(sd->status.inventory[id].owner_id!=sd->status.id) {
+	// 	clif_sendminitext(sd, "You cannot use this, it does not belong to you!");
+	// 	return 0;
 
-	int type = itemdb_type(sd->status.inventory[id].id) - 3;
-	if (type >= 0) {
-		if (sd->status.equip[type].id > 0 && !sd->status.gm_level) {
-			if (itemdb_unequip(sd->status.equip[type].id) == 1) {
-				char text[] = "You are unable to unequip that.";
-				clif_sendminitext(sd, text);
-				return 0;
-			}
-		}
-	}
-
-	if (itemdb_class(sd->status.inventory[id].id) != 0) {
+	// 	}
+	// }
+	if(itemdb_class(sd->status.inventory[id].id)!=0) {
 		// If GM
-		if (classdb_path(sd->status.class) == 5) {
+		if (sd->status.class==50){
 			// Give no errors.
 		// If Item's Class requirement is less than 6
-		}
-		else if (itemdb_class(sd->status.inventory[id].id) < 6) {
+		} else if (itemdb_class(sd->status.inventory[id].id)<6) {
 			// If subpath base class is same as not item's required base path
-			if (classdb_path(sd->status.class) != itemdb_class(sd->status.inventory[id].id)) {
+			if(classdb_path(sd->status.class)!=itemdb_class(sd->status.inventory[id].id)) {
 				clif_sendminitext(sd, map_msg[MAP_ERRITMPATH].message);
 				return 0;
 			}
-			// If Item's Class requirement is over 5 (subpath restricted)
-		}
-		else {
-			// If player class is not class required by item
-			if (sd->status.class != itemdb_class(sd->status.inventory[id].id)) {
+		// If Item's Class requirement is over 5 (subpath restricted)
+		} else {
+		// If player class is not class required by item
+			if(sd->status.class!=itemdb_class(sd->status.inventory[id].id)) {
 				clif_sendminitext(sd, map_msg[MAP_ERRITMPATH].message);
 				return 0;
 			}
 		}
-		if (sd->status.mark < itemdb_rank(sd->status.inventory[id].id)) {
-			clif_sendminitext(sd, map_msg[MAP_ERRITMMARK].message);
+		if(sd->status.mark<itemdb_rank(sd->status.inventory[id].id)) {
+			clif_sendminitext(sd, map_msg[MAP_ERRITMPATH].message);
 			return 0;
 		}
 	}
-	if (sd->status.state == PC_DIE) {
+	if (sd->status.state==PC_DIE && itemdb_type(sd->status.inventory[id].id)!=ITM_USESPC) {
 		clif_sendminitext(sd, map_msg[MAP_ERRGHOST].message);
 		return 0;
 	}
-	if (sd->status.state == PC_MOUNTED) {
-		if (sd->status.inventory[id].id > 15000 && sd->status.inventory[id].id < 17000) // If the item being used is a mount
-		{
-			sl_doscript_blargs("onDismount", NULL, 1, &sd->bl);
-			return 0;
-		}
 
-		clif_sendminitext(sd, map_msg[MAP_ERRMOUNT].message);
-		return 0;
-	}
+	// if (itemdb_time(sd->status.inventory[id].id)) {
+	// 	if (!sd->status.inventory[id].timeleft) {
+	// 		sd->status.inventory[id].timeleft = time(NULL) + itemdb_time(sd->status.inventory[id].id);
+	// 	}
+	// }
 
-	if (itemdb_time(sd->status.inventory[id].id)) {
-		if (!sd->status.inventory[id].time) {
-			sd->status.inventory[id].time = time(NULL) + itemdb_time(sd->status.inventory[id].id);
-		}
-	}
-
-	switch (itemdb_type(sd->status.inventory[id].id)) {
+	switch(itemdb_type(sd->status.inventory[id].id)) {
 	case ITM_EAT:
-
-		if (!map[sd->bl.m].canEat && !sd->status.gm_level) {
-			clif_sendminitext(sd, "You cannot eat this here.");
+		if (sd->status.state == 1 || sd->status.state == 3) {
+			clif_sendminitext(sd, "You cannot do that now.");
 			return 0;
 		}
 
 		sd->invslot = id;
-		/*Sql_EscapeString(sql_handle,escape,sd->status.inventory[id].real_name);
+		Sql_EscapeString(sql_handle,escape,sd->status.inventory[id].real_name);
 
 		if(SQL_ERROR == Sql_Query(sql_handle,"INSERT INTO `UseLogs` (`UseChaId`, `UseMapId`, `UseX`, `UseY`, `UseItmId`) VALUES ('%u', '%u', '%u', '%u', '%u')",
 				sd->status.id, sd->bl.m, sd->bl.x, sd->bl.y, sd->status.inventory[id].id)) {
 			SqlStmt_ShowDebug(sql_handle);
-		}*/
-
-		sl_async_freeco(sd);
-		sl_doscript_simple(itemdb_yname(sd->status.inventory[id].id), "use", &sd->bl);
-		sl_doscript_blargs("use", NULL, 1, &sd->bl);
-
-		pc_delitem(sd, id, 1, 2);
-		break;
-	case ITM_USE: // 1
-		if (!map[sd->bl.m].canUse && !sd->status.gm_level) {
-			clif_sendminitext(sd, "You cannot use this here.");
-			return 0;
 		}
 
-		sd->invslot = id;
-		/*Sql_EscapeString(sql_handle,escape,sd->status.inventory[id].real_name);
-
-		if(SQL_ERROR == Sql_Query(sql_handle,"INSERT INTO `UseLogs` (`UseChaId`, `UseMapId`, `UseX`, `UseY`, `UseItmId`) VALUES ('%u', '%u', '%u', '%u', '%u')",
-				sd->status.id, sd->bl.m, sd->bl.x, sd->bl.y, sd->status.inventory[id].id)) {
-			SqlStmt_ShowDebug(sql_handle);
-		}*/
-
-		sl_async_freeco(sd);
-		sl_doscript_simple(itemdb_yname(sd->status.inventory[id].id), "use", &sd->bl);
-		sl_doscript_blargs("use", NULL, 1, &sd->bl);
-
-		pc_delitem(sd, id, 1, 6);
-		break;
-
-	case ITM_USESPC: // 18
-		if (!map[sd->bl.m].canUse && !sd->status.gm_level) {
-			clif_sendminitext(sd, "You cannot use this here.");
-			return 0;
-		}
-
-		sd->invslot = id;
-		/*Sql_EscapeString(sql_handle,escape,sd->status.inventory[id].real_name);
-
-		if(SQL_ERROR == Sql_Query(sql_handle,"INSERT INTO `UseLogs` (`UseChaId`, `UseMapId`, `UseX`, `UseY`, `UseItmId`) VALUES ('%u', '%u', '%u', '%u', '%u')",
-				sd->status.id, sd->bl.m, sd->bl.x, sd->bl.y, sd->status.inventory[id].id)) {
-			SqlStmt_ShowDebug(sql_handle);
-		}*/
-
-		sl_async_freeco(sd);
-		sl_doscript_simple(itemdb_yname(sd->status.inventory[id].id), "use", &sd->bl);
-		sl_doscript_blargs("use", NULL, 1, &sd->bl);
-
-		break;
-	case ITM_BAG: // 21
-
-		if (!map[sd->bl.m].canUse && !sd->status.gm_level) {
-			clif_sendminitext(sd, "You cannot use this here.");
-			return 0;
-		}
-
-		sd->invslot = id;
-		/*Sql_EscapeString(sql_handle,escape,sd->status.inventory[id].real_name);
-
-		if(SQL_ERROR == Sql_Query(sql_handle,"INSERT INTO `UseLogs` (`UseChaId`, `UseMapId`, `UseX`, `UseY`, `UseItmId`) VALUES ('%u', '%u', '%u', '%u', '%u')",
-				sd->status.id, sd->bl.m, sd->bl.x, sd->bl.y, sd->status.inventory[id].id)) {
-			SqlStmt_ShowDebug(sql_handle);
-		}*/
-
-		sl_async_freeco(sd);
-		sl_doscript_simple(itemdb_yname(sd->status.inventory[id].id), "use", &sd->bl);
-		sl_doscript_blargs("use", NULL, 1, &sd->bl);
-
-		break;
-	case ITM_MAP: // 22
-
-		if (!map[sd->bl.m].canUse && !sd->status.gm_level) {
-			clif_sendminitext(sd, "You cannot use this here.");
-			return 0;
-		}
-
-		sd->invslot = id;
-		/*Sql_EscapeString(sql_handle,escape,sd->status.inventory[id].real_name);
-
-		if(SQL_ERROR == Sql_Query(sql_handle,"INSERT INTO `UseLogs` (`UseChaId`, `UseMapId`, `UseX`, `UseY`, `UseItmId`) VALUES ('%u', '%u', '%u', '%u', '%u')",
-				sd->status.id, sd->bl.m, sd->bl.x, sd->bl.y, sd->status.inventory[id].id)) {
-			SqlStmt_ShowDebug(sql_handle);
-		}*/
-
-		sl_async_freeco(sd);
-		sl_doscript_simple(itemdb_yname(sd->status.inventory[id].id), "use", &sd->bl);
-		sl_doscript_blargs("maps", "use", 1, &sd->bl);
-
-		break;
-
-	case ITM_QUIVER: // 23
-
-		if (!map[sd->bl.m].canUse && !sd->status.gm_level) {
-			clif_sendminitext(sd, "You cannot use this here.");
-			return 0;
-		}
-
-		sd->invslot = id;
-
-		/*sl_async_freeco(sd);
 		sl_doscript_simple(itemdb_yname(sd->status.inventory[id].id),"use",&sd->bl);
-		sl_doscript_blargs("use", NULL, 1, &sd->bl);
+		sd->status.hp += itemdb_vita(sd->status.inventory[id].id);
+		sd->status.mp += itemdb_mana(sd->status.inventory[id].id);
+		if (sd->status.hp > sd->max_hp) sd->status.hp = sd->max_hp;
+		if (sd->status.mp > sd->max_mp) sd->status.mp = sd->max_mp;
+		pc_delitem(sd,id,1,2);
+		clif_sendaction(&sd->bl, 8, 20, 0);
+		clif_sendstatus(sd, SFLAG_HPMP);
+		break;
+	case ITM_USE:
+	case ITM_USESPC:
+		if (sd->status.state == 1 || sd->status.state == 3) {
+			clif_sendminitext(sd, "You cannot do that now.");
+			return 0;
+		}
 
-		sd->status.inventory[id].dura -= 1;
+		sd->invslot = id;
+		Sql_EscapeString(sql_handle,escape,sd->status.inventory[id].real_name);
 
+		if(SQL_ERROR == Sql_Query(sql_handle,"INSERT INTO `UseLogs` (`UseChaId`, `UseMapId`, `UseX`, `UseY`, `UseItmId`) VALUES ('%u', '%u', '%u', '%u', '%u')",
+				sd->status.id, sd->bl.m, sd->bl.x, sd->bl.y, sd->status.inventory[id].id)) {
+			SqlStmt_ShowDebug(sql_handle);
+		}
+
+		sl_doscript_simple(itemdb_yname(sd->status.inventory[id].id),"use",&sd->bl);
+		pc_delitem(sd,id,1,6);
+		break;
+	case ITM_SMOKE:
+		if (sd->status.state == 1 || sd->status.state == 3) {
+			clif_sendminitext(sd, "You cannot do that now.");
+			return 0;
+		}
+
+		sd->invslot = id;
+		Sql_EscapeString(sql_handle,escape,sd->status.inventory[id].real_name);
+
+		if(SQL_ERROR == Sql_Query(sql_handle,"INSERT INTO `UseLogs` (`UseChaId`, `UseMapId`, `UseX`, `UseY`, `UseItmId`) VALUES ('%u', '%u', '%u', '%u', '%u')",
+				sd->status.id, sd->bl.m, sd->bl.x, sd->bl.y, sd->status.inventory[id].id)) {
+			SqlStmt_ShowDebug(sql_handle);
+		}
+
+		sd->invslot = id;
+		sl_doscript_simple(itemdb_yname(sd->status.inventory[id].id),"use",&sd->bl);
+		sd->status.inventory[id].dura-=1;
+		clif_sendaction(&sd->bl, 8, 20, 0);
+		sd->status.hp += itemdb_vita(sd->status.inventory[id].id);
+		sd->status.mp += itemdb_mana(sd->status.inventory[id].id);
+		if (sd->status.hp > sd->max_hp) sd->status.hp = sd->max_hp;
+		if (sd->status.mp > sd->max_mp) sd->status.mp = sd->max_mp;
+		clif_sendstatus(sd, SFLAG_HPMP);
 		if(sd->status.inventory[id].dura==0) {
 			pc_delitem(sd,id,1,3);
 		} else {
 			clif_sendadditem(sd,id);
-		}*/
-
-		clif_sendminitext(sd, "This item is only usable with a bow.");
-
-		break;
-
-	case ITM_MOUNT: // 24
-
-		if (!map[sd->bl.m].canUse && !sd->status.gm_level) {
-			clif_sendminitext(sd, "You cannot use this here.");
-			return 0;
-		}
-
-		sd->invslot = id;
-
-		sl_async_freeco(sd);
-		sl_doscript_simple(itemdb_yname(sd->status.inventory[id].id), "use", &sd->bl);
-		sl_doscript_blargs("onMountItem", NULL, 1, &sd->bl);
-
-		break;
-	case ITM_FACE: // 25
-
-		if (!map[sd->bl.m].canUse && !sd->status.gm_level) {
-			clif_sendminitext(sd, "You cannot use this here.");
-			return 0;
-		}
-
-		sd->invslot = id;
-
-		sl_async_freeco(sd);
-		sl_doscript_simple(itemdb_yname(sd->status.inventory[id].id), "use", &sd->bl);
-		sl_doscript_blargs("useFace", NULL, 1, &sd->bl);
-
-		break;
-
-	case ITM_SET: // 26
-
-		if (!map[sd->bl.m].canUse && !sd->status.gm_level) {
-			clif_sendminitext(sd, "You cannot use this here.");
-			return 0;
-		}
-
-		sd->invslot = id;
-
-		sl_async_freeco(sd);
-		sl_doscript_simple(itemdb_yname(sd->status.inventory[id].id), "use", &sd->bl);
-		sl_doscript_blargs("useSetItem", NULL, 1, &sd->bl);
-
-		break;
-
-	case ITM_SKIN: // 27
-
-		if (!map[sd->bl.m].canUse && !sd->status.gm_level) {
-			clif_sendminitext(sd, "You cannot use this here.");
-			return 0;
-		}
-
-		sd->invslot = id;
-
-		sl_async_freeco(sd);
-		sl_doscript_simple(itemdb_yname(sd->status.inventory[id].id), "use", &sd->bl);
-		sl_doscript_blargs("useSkinItem", NULL, 1, &sd->bl);
-
-		break;
-
-	case ITM_HAIR_DYE: // 28
-
-		if (!map[sd->bl.m].canUse && !sd->status.gm_level) {
-			clif_sendminitext(sd, "You cannot use this here.");
-			return 0;
-		}
-
-		sd->invslot = id;
-
-		sl_async_freeco(sd);
-		sl_doscript_simple(itemdb_yname(sd->status.inventory[id].id), "use", &sd->bl);
-		sl_doscript_blargs("useHairDye", NULL, 1, &sd->bl);
-
-		break;
-
-	case ITM_FACEACCTWO: // 29
-
-		if (!map[sd->bl.m].canUse && !sd->status.gm_level) {
-			clif_sendminitext(sd, "You cannot use this here.");
-			return 0;
-		}
-
-		sd->invslot = id;
-
-		sl_async_freeco(sd);
-		sl_doscript_simple(itemdb_yname(sd->status.inventory[id].id), "use", &sd->bl);
-		sl_doscript_blargs("useBeardItem", NULL, 1, &sd->bl);
-
-		break;
-
-	case ITM_SMOKE:
-		if (!map[sd->bl.m].canSmoke && !sd->status.gm_level) {
-			clif_sendminitext(sd, "You cannot smoke this here.");
-			return 0;
-		}
-
-		sd->invslot = id;
-		/*Sql_EscapeString(sql_handle,escape,sd->status.inventory[id].real_name);
-
-		if(SQL_ERROR == Sql_Query(sql_handle,"INSERT INTO `UseLogs` (`UseChaId`, `UseMapId`, `UseX`, `UseY`, `UseItmId`) VALUES ('%u', '%u', '%u', '%u', '%u')",
-				sd->status.id, sd->bl.m, sd->bl.x, sd->bl.y, sd->status.inventory[id].id)) {
-			SqlStmt_ShowDebug(sql_handle);
-		}*/
-
-		sd->invslot = id;
-
-		sl_async_freeco(sd);
-		sl_doscript_simple(itemdb_yname(sd->status.inventory[id].id), "use", &sd->bl);
-		sl_doscript_blargs("use", NULL, 1, &sd->bl);
-
-		sd->status.inventory[id].dura -= 1;
-
-		if (sd->status.inventory[id].dura == 0) {
-			pc_delitem(sd, id, 1, 3);
-		}
-		else {
-			clif_sendadditem(sd, id);
 		}
 		break;
-
 	case ITM_HELM:
 	case ITM_WEAP:
 	case ITM_ARMOR:
 	case ITM_SHIELD:
-	case ITM_HAND:
-	case ITM_COAT:
-	case ITM_BOOTS:
+	// case ITM_HAND:
+	// case ITM_COAT:
+	// case ITM_BOOTS:
 	case ITM_LEFT:
 	case ITM_RIGHT:
 	case ITM_SUBLEFT:
 	case ITM_SUBRIGHT:
-	case ITM_FACEACC:
-	case ITM_CROWN:
-	case ITM_MANTLE:
-	case ITM_NECKLACE:
-		if (!map[sd->bl.m].canEquip && !sd->status.gm_level) { clif_sendminitext(sd, "You cannot equip/de-equip on this map."); return 0; }
-
-		pc_equipitem(sd, id);
+	// case ITM_FACEACC:
+	// case ITM_CROWN:
+	// case ITM_MANTLE:
+	// case ITM_NECKLACE:
+			pc_equipitem(sd, id);
 		break;
 	case ITM_ETC:
-		if (!map[sd->bl.m].canUse && !sd->status.gm_level) {
-			clif_sendminitext(sd, "You cannot use this here.");
-			return 0;
-		}
-
 		sd->invslot = id;
-		/*Sql_EscapeString(sql_handle,escape,sd->status.inventory[id].real_name);
+		Sql_EscapeString(sql_handle,escape,sd->status.inventory[id].real_name);
 
 		if(SQL_ERROR == Sql_Query(sql_handle,"INSERT INTO `UseLogs` (`UseChaId`, `UseMapId`, `UseX`, `UseY`, `UseItmId`) VALUES ('%u', '%u', '%u', '%u', '%u')",
 				sd->status.id, sd->bl.m, sd->bl.x, sd->bl.y, sd->status.inventory[id].id)) {
 			SqlStmt_ShowDebug(sql_handle);
-		}*/
+		}
 
-		sl_async_freeco(sd);
-		sl_doscript_simple(itemdb_yname(sd->status.inventory[id].id), "use", &sd->bl);
-		sl_doscript_blargs("use", NULL, 1, &sd->bl);
-
+		sl_doscript_simple(itemdb_yname(sd->status.inventory[id].id),"use",&sd->bl);
 		break;
 	default:
 		break;
@@ -2333,6 +2124,7 @@ int pc_useitem(USER* sd, int id) {
 
 	return 0;
 }
+
 
 /*==========================================
  * script Read&Set PC Reg
