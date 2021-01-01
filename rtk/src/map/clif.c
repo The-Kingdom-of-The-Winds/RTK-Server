@@ -1654,7 +1654,7 @@ int clif_object_look_sub(struct block_list* bl, va_list ap) {
 		// WFIFOB(sd->fd, len + 11) = 12;
 		WFIFOW(sd->fd, len + 15) = SWAP16(32768 + b->graphic_id);
 		WFIFOB(sd->fd, len + 17) = b->graphic_color;
-		WFIFOB(sd->fd, len + 18) = nd->side;//Looking down
+		WFIFOB(sd->fd, len + 18) = nd->side + 2;//Looking down
 		WFIFOW(sd->fd, len + 19) = 0;
 		WFIFOB(sd->fd, len + 20) = 0;
 		WFIFOB(sd->fd, len + 21) = 0;
