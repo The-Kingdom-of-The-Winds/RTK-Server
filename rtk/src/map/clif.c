@@ -1790,24 +1790,24 @@ int clif_object_look_sub(struct block_list* bl, va_list ap) {
 
 		if(b->subtype || nd->npctype == 1) return 0;
 
-//    clif_broadcast("Npc is supposed to appear", -1);
+//    	clif_broadcast("Npc is supposed to appear", -1);
 
 
 
-	WFIFOB(sd->fd,0)=0xAA;
-	WFIFOW(sd->fd,1)=SWAP16(20);
-	WFIFOB(sd->fd,3)=0x07;
-	WFIFOB(sd->fd,4)=0x03;
-	WFIFOW(sd->fd,5)=SWAP16(1);
-	WFIFOW(sd->fd,7)=SWAP16(nd->bl.x);
-	WFIFOW(sd->fd,9)=SWAP16(nd->bl.y);
-	WFIFOL(sd->fd,11)=SWAP32(nd->bl.id);
-	WFIFOW(sd->fd,15)=SWAP16(32768+nd->bl.graphic_id);
-	WFIFOB(sd->fd,17)=nd->bl.graphic_color;
-	WFIFOB(sd->fd,18)=nd->side + 2; //Looking down
-	WFIFOW(sd->fd,19)=0;
-	WFIFOB(sd->fd,20)=0;
-	WFIFOB(sd->fd,21)=0;
+		WFIFOB(sd->fd,0)=0xAA;
+		WFIFOW(sd->fd,1)=SWAP16(20);
+		WFIFOB(sd->fd,3)=0x07;
+		WFIFOB(sd->fd,4)=0x03;
+		WFIFOW(sd->fd,5)=SWAP16(1);
+		WFIFOW(sd->fd,7)=SWAP16(nd->bl.x);
+		WFIFOW(sd->fd,9)=SWAP16(nd->bl.y);
+		WFIFOL(sd->fd,11)=SWAP32(nd->bl.id);
+		WFIFOW(sd->fd,15)=SWAP16(32768+nd->bl.graphic_id);
+		WFIFOB(sd->fd,17)=nd->bl.graphic_color;
+		WFIFOB(sd->fd,18)=nd->side; //Looking down
+		WFIFOW(sd->fd,19)=0;
+		WFIFOB(sd->fd,20)=0;
+		WFIFOB(sd->fd,21)=0;
 
 
 		break;
@@ -1828,6 +1828,7 @@ int clif_object_look_sub(struct block_list* bl, va_list ap) {
 //      WFIFOSET(sd->fd,encrypt(sd->fd));
 		break;
 	}
+	
 	WFIFOW(sd->fd,1)=SWAP16(21+nlen);
     WFIFOSET(sd->fd,encrypt(sd->fd));
 	//sd->mob_count++;
