@@ -4870,93 +4870,80 @@ int clif_spawn(USER* sd) {
 	return 0;
 }
 
-int clif_parsewalk(USER *sd) {
+int clif_parsewalk(USER* sd) {
 	int moveblock;
-	int dx, dy, xold, yold,c=0;
+	int dx, dy, xold, yold, c = 0;
 	struct warp_list* x = NULL;
-	int x0=0,y0=0,x1=0,y1=0,direction=0;
+	int x0 = 0, y0 = 0, x1 = 0, y1 = 0, direction = 0;
 	unsigned short checksum = 0;
-	int xcheck,ycheck;
-	int speed=0;
-	char *buf = NULL;
+	int xcheck, ycheck;
+	//int speed=0;
+	char* buf = NULL;
 	int def[2];
 	int subt[1];
 	int i = 0;
 
-	subt[0]=0;
-	def[0]=0;
-	def[1]=0;
+	subt[0] = 0;
+	def[0] = 0;
+	def[1] = 0;
 
-	speed = RFIFOB(sd->fd,7);
+	//if (map_readglobalreg(sd->bl.m,"blackout") != 0) clif_refreshmap(sd);
 
-	// if ((speed != sd->speed || (speed != 80 && sd->status.state != 3)) && !sd->status.gm_level)
-	 //	printf("Name: %s Speed Sent: %d, Char Speed: %d\n", sd->status.name, speed, sd->speed);
+	//speed = RFIFOB(sd->fd,7);
 
-	if (sd->LastWalk && RFIFOB(sd->fd, 6) == sd->LastWalk) {
-		clif_Hacker(sd->status.name, "Walk Editing.");
-		session[sd->fd]->eof = 14;
-		return 0;
+	//if ((speed != sd->speed || (speed != 80 && sd->status.state != 3)) && !sd->status.gm_level)
+		//printf("Name: %s Speed Sent: %d, Char Speed: %d\n", sd->status.name, speed, sd->speed);
+
+	//if (sd->LastWalk && RFIFOB(sd->fd, 6) == sd->LastWalk) {
+	//	clif_Hacker(sd->status.name, "Walk Editing.");
+	//	session[sd->fd]->eof = 14;
+	//	return 0;
+	//}
+
+	/*float speed = (float)sd->speed;
+	float factor = 330 * (speed/100);
+	unsigned long time_buff = (unsigned long)(factor + 0.5f);
+	unsigned long difftick = DIFF_TICK(gettick(),sd->LastWalkTick);
+
+	//printf("difftick: %lu  time_buff: %lu\n",difftick,time_buff);
+
+	sd->LastWalkTick = gettick();
+	if (difftick <= time_buff && !sd->status.gm_level) return 0;*/
+
+	if (!map[sd->bl.m].canMount && sd->status.state == 3 && !sd->status.gm_level) sl_doscript_blargs("onDismount", NULL, 1, &sd->bl);
+
+	direction = RFIFOB(sd->fd, 5);
+
+	xold = dx = SWAP16(RFIFOW(sd->fd, 7));
+	yold = dy = SWAP16(RFIFOW(sd->fd, 9));
+
+	if (RFIFOB(sd->fd, 3) == 6) {
+		x0 = SWAP16(RFIFOW(sd->fd, 11));
+		y0 = SWAP16(RFIFOW(sd->fd, 13));
+		x1 = RFIFOB(sd->fd, 15);
+		y1 = RFIFOB(sd->fd, 16);
+		checksum = SWAP16(RFIFOW(sd->fd, 17));
 	}
 
-	/*if (speed != sd->speed) {
-		char RegStr[] = "SpeedTimes";
-		char SpeedTimes = 0;
-
-		clif_Hacker(sd->status.name, "Speedhacking.");
-		SpeedTimes = pc_readglobalreg(sd, RegStr) + 1;
-		pc_setglobalreg(sd, RegStr, SpeedTimes);
-
-		if (SpeedTimes == 10) {
-			pc_setglobalreg(sd, RegStr, 0);
-			session[sd->fd]->eof = 14;
-			return 0;
-		}
-	}*/
-
-	direction=RFIFOB(sd->fd,5);
-	xold=dx = SWAP16(RFIFOW(sd->fd,7));
-	yold=dy = SWAP16(RFIFOW(sd->fd,9));
-
-	//printf("xold=%d yold=%d xold1=%d yold1=%d\n",xold,yold,xold1,yold1);
-
-
-	if(RFIFOB(sd->fd,3)==6) {
-		x0=SWAP16(RFIFOW(sd->fd,11)); // x0 is the line where to start the first line in the map
-		y0=SWAP16(RFIFOW(sd->fd,13));
-		x1=RFIFOB(sd->fd,15); // x1 is the number of lines to change in client
-		y1=RFIFOB(sd->fd,16);
-		checksum=SWAP16(RFIFOW(sd->fd,17));
-        //printf("map_parse x0=%d y0=%d x1=%d y1=%d\n",x0,y0,x1,y1);
-	}
-/*
-	    char str[256];
-    sprintf(str, "ParseWalk x0=%d y0=%d x1=%d y1=%d", x0, y0, x1, y1);
-    clif_broadcast(str, -1);
-*/
-/* Fucking up for now
-	if(dx!=sd->bl.x) {
-		//map_delblock(&sd->bl);
-		//clif_sendxy(sd);
-		clif_blockmovement(sd,0);
-		map_moveblock(&sd->bl,sd->bl.x,sd->bl.y);
+	if (dx != sd->bl.x) {
+		clif_blockmovement(sd, 0);
+		map_moveblock(&sd->bl, sd->bl.x, sd->bl.y);
 		clif_sendxy(sd);
-		clif_blockmovement(sd,1);
-		//map_addblock(&sd->bl);
+		clif_blockmovement(sd, 1);
 		return 0;
 	}
 
-	if(dy!=sd->bl.y) { //pc_warp(sd,sd->bl.m,sd->bl.x,sd->bl.y);
-		clif_blockmovement(sd,0);
-		map_moveblock(&sd->bl,sd->bl.x,sd->bl.y);
+	if (dy != sd->bl.y) {
+		clif_blockmovement(sd, 0);
+		map_moveblock(&sd->bl, sd->bl.x, sd->bl.y);
 		clif_sendxy(sd);
-		clif_blockmovement(sd,1);
+		clif_blockmovement(sd, 1);
 		return 0;
 	}
-*/
 
-	sd->canmove=0;
+	sd->canmove = 0;
 
-	switch(direction) {
+	switch (direction) {
 	case 0:
 		dy--;
 		break;
@@ -4976,61 +4963,70 @@ int clif_parsewalk(USER *sd) {
 	if (dy < 0) dy = 0;
 	if (dy >= map[sd->bl.m].ys) dy = map[sd->bl.m].ys - 1;
 
-	if(!sd->status.gm_level) {
-		map_foreachincell(clif_canmove_sub,sd->bl.m,dx,dy,BL_PC,sd);
-		map_foreachincell(clif_canmove_sub,sd->bl.m,dx,dy,BL_MOB,sd);
-		map_foreachincell(clif_canmove_sub,sd->bl.m,dx,dy,BL_NPC,sd);
-		if(read_pass(sd->bl.m,dx,dy)) sd->canmove=1;
+	if (!sd->status.gm_level) {
+		map_foreachincell(clif_canmove_sub, sd->bl.m, dx, dy, BL_PC, sd);
+		map_foreachincell(clif_canmove_sub, sd->bl.m, dx, dy, BL_MOB, sd);
+		map_foreachincell(clif_canmove_sub, sd->bl.m, dx, dy, BL_NPC, sd);
+		if (read_pass(sd->bl.m, dx, dy)) sd->canmove = 1;
 	}
 
 	//map_foreachincell(clif_canmove_sub,sd->bl.m,dx,dy,BL_NPC,sd);
-	if((sd->canmove || sd->paralyzed || sd->sleep != 1.0f || sd->snare) && !sd->status.gm_level) {
-		clif_blockmovement(sd,0);
+	if ((sd->canmove || sd->paralyzed || sd->sleep != 1.0f || sd->snare) && !sd->status.gm_level) {
+		clif_blockmovement(sd, 0);
 		clif_sendxy(sd);
-		clif_blockmovement(sd,1);
-		//clif_parserefresh(sd);
-		//printf("block movement\n" );
-		//printf("%d %d %d %d\n", sd->canmove, sd->paralyzed, sd->sleep, sd->snare);
+		clif_blockmovement(sd, 1);
 		return 0;
 	}
-	//printf("sd->viewx, sd->viewy %d %d\n", direction, xold, yold, sd->viewx, sd->viewy);
 
 	if (direction == 0 && (dy <= sd->viewy || ((map[sd->bl.m].ys - 1 - dy) < 7 && sd->viewy > 7))) sd->viewy--;
 	if (direction == 1 && ((dx < 8 && sd->viewx < 8) || 16 - (map[sd->bl.m].xs - 1 - dx) <= sd->viewx)) sd->viewx++;
 	if (direction == 2 && ((dy < 7 && sd->viewy < 7) || 14 - (map[sd->bl.m].ys - 1 - dy) <= sd->viewy)) sd->viewy++;
 	if (direction == 3 && (dx <= sd->viewx || ((map[sd->bl.m].xs - 1 - dx) < 8 && sd->viewx > 8))) sd->viewx--;
 	if (sd->viewx < 0) sd->viewx = 0;
-//	if (sd->viewx > 16) sd->viewx = 16; // Imp2
+	if (sd->viewx > 16) sd->viewx = 16;
 	if (sd->viewy < 0) sd->viewy = 0;
-//	if (sd->viewy > 14) sd->viewy = 14; // Imp2
+	if (sd->viewy > 14) sd->viewy = 14;
 
 	//Fast Walk shit, will flag later.
-//	if(!(sd->status.settingFlags & FLAG_FASTMOVE)) {
+	// if (!(sd->status.settingFlags & FLAG_FASTMOVE)) {
 		if (!session[sd->fd])
 		{
 			session[sd->fd]->eof = 8;
 			return 0;
 		}
 
-		WFIFOHEAD(sd->fd,15);
+		WFIFOHEAD(sd->fd, 15);
 		WFIFOB(sd->fd, 0) = 0xAA;
 		WFIFOB(sd->fd, 1) = 0x00;
 		WFIFOB(sd->fd, 2) = 0x0C;
 		WFIFOB(sd->fd, 3) = 0x26;
-		WFIFOB(sd->fd, 4) = 0x03;
+		//WFIFOB(sd->fd, 4) = 0x03;
 		WFIFOB(sd->fd, 5) = direction;
 		WFIFOW(sd->fd, 6) = SWAP16(xold);
 		WFIFOW(sd->fd, 8) = SWAP16(yold);
-
-			WFIFOW(sd->fd, 10) = SWAP16(sd->viewx);
-
-			WFIFOW(sd->fd, 12) = SWAP16(sd->viewy);
-
+		//if (x0 > 0 && x0 < map[sd->bl.m].xs - 1) {
+		//if ((dx >= 0 && dx <= sd->viewx) || (dx <= map[sd->bl.m].xs - 1 && dx >= map[sd->bl.m].xs - 1 - abs(sd->viewx - 16))) {
+		WFIFOW(sd->fd, 10) = SWAP16(sd->viewx);
+		//} else {
+		//	WFIFOW(sd->fd, 10) = SWAP16(dx);
+		//}
+		//if (y0 > 0 && y0 < map[sd->bl.m].xs - 1) {
+		//if ((dy >= 0 && dy <= sd->viewy) || (dy <= map[sd->bl.m].ys - 1 && dy >= map[sd->bl.m].ys - 1 - abs(sd->viewy - 14))) {
+		WFIFOW(sd->fd, 12) = SWAP16(sd->viewy);
+		//} else {
+		//	WFIFOW(sd->fd, 12) = SWAP16(dy);
+		//}
+		/*if (RFIFOB(sd->fd, 3) == 0x06) {
+			WFIFOW(sd->fd, 10) = SWAP16(8);
+			WFIFOW(sd->fd, 12) = SWAP16(7);
+		} else {
+			WFIFOW(sd->fd, 10) = SWAP16(dx);
+			WFIFOW(sd->fd, 12) = SWAP16(dy);
+		}*/
 
 		WFIFOB(sd->fd, 14) = 0x00;
-		//clif_debug(WFIFOP(sd->fd, 0), SWAP16(WFIFOW(sd->fd, 1)) + 3);
-		//printf("%d %d %d %d %d\n", direction, xold, yold, sd->viewx, sd->viewy);
 		WFIFOSET(sd->fd, encrypt(sd->fd));
+	// }
 
 	if (dx == sd->bl.x && dy == sd->bl.y)
 		return 0;
@@ -5047,12 +5043,10 @@ int clif_parsewalk(USER *sd) {
 	WBUFB(buf, 13) = direction;
 	WBUFB(buf, 14) = 0x00;
 	//crypt(WBUFP(buf, 0));
-	//printf("direction %d xold%d yold%d sd->viewx:%d %d\n", direction, xold, yold, sd->viewx, sd->viewy);
-
-	//clif_debug(buf, 0x0C + 3);
-	if(sd->optFlags & optFlag_stealth) {
+	if (sd->optFlags & optFlag_stealth) {
 		clif_sendtogm(buf, 32, &sd->bl, AREA_WOS);
-	} else {
+	}
+	else {
 		clif_send(buf, 32, &sd->bl, AREA_WOS); //come back
 	}
 	FREE(buf);
@@ -5060,42 +5054,26 @@ int clif_parsewalk(USER *sd) {
 	//moveblock = (sd->bl.x/BLOCK_SIZE != dx/BLOCK_SIZE || sd->bl.y/BLOCK_SIZE != dy/BLOCK_SIZE);
 
 	//if(moveblock)
-	map_moveblock(&sd->bl,dx,dy);
+	map_moveblock(&sd->bl, dx, dy);
 	//if(moveblock) map_addblock(&sd->bl);
 
-
-
 	if (RFIFOB(sd->fd, 3) == 0x06) {
-
-
 		clif_sendmapdata(sd, sd->bl.m, x0, y0, x1, y1, checksum);
-
-/*
-    char str[256];
-    sprintf(str, "ParseWalk x0=%d y0=%d x1=%d y1=%d", x0, y0, x1, y1);
-    clif_broadcast(str, -1);
-*/
-
 		//this is where all the "finding" code goes
-//		clif_mob_look_start(sd); // wtf is that?
 
+		clif_mob_look_start(sd);
 
-//		map_foreachinblock(clif_object_look_sub2, sd->bl.m, x0, y0, x0 + (x1 - 1), y0 + (y1 - 1), BL_ALL, LOOK_GET, sd); ïmp 2
-		map_foreachinblock(clif_object_look_sub2, sd->bl.m, x0, y0, x0 + x1, y0 + y1, BL_ALL, LOOK_GET, sd);
-
-
-		//map_foreachinblock(clif_mob_look2,sd->bl.m,x0,y0,x0+(x1-1),y0+(y1-1),BL_ALL,LOOK_GET,def,sd);
+		map_foreachinblock(clif_object_look_sub, sd->bl.m, x0, y0, x0 + (x1 - 1), y0 + (y1 - 1), BL_ALL, LOOK_GET, sd);
+		//map_foreachinarea(clif_mob_look_sub,sd->bl.m,x0,y0,x0+(x1-1),y0+(y1-1),SAMEAREA, BL_MOB,LOOK_GET,sd);
 		//map_foreachinblock(clif_itemlook_sub2,sd->bl.m,x0,y0,x0+(x1-1),y0+(y1-1),BL_ALL,LOOK_GET,def,sd);
-//		clif_mob_look_close(sd); // huh?
+		clif_mob_look_close(sd);
 		map_foreachinblock(clif_charlook_sub, sd->bl.m, x0, y0, x0 + (x1 - 1), y0 + (y1 - 1), BL_PC, LOOK_GET, sd);
-//		map_foreachinblock(clif_cnpclook_sub, sd->bl.m, x0, y0, x0 + (x1 - 1), y0 + (y1 - 1), BL_NPC, LOOK_GET, sd);
-// Show character instead of monster
-//		map_foreachinblock(clif_cmoblook_sub, sd->bl.m, x0, y0, x0 + (x1 - 1), y0 + (y1 - 1), BL_MOB, LOOK_GET, sd);
+		map_foreachinblock(clif_cnpclook_sub, sd->bl.m, x0, y0, x0 + (x1 - 1), y0 + (y1 - 1), BL_NPC, LOOK_GET, sd);
+		map_foreachinblock(clif_cmoblook_sub, sd->bl.m, x0, y0, x0 + (x1 - 1), y0 + (y1 - 1), BL_MOB, LOOK_GET, sd);
 		map_foreachinblock(clif_charlook_sub, sd->bl.m, x0, y0, x0 + (x1 - 1), y0 + (y1 - 1), BL_PC, LOOK_SEND, sd);
-
 	}
 
-	if(session[sd->fd]->eof)printf("%s eof set on.  19", sd->status.name);
+	if (session[sd->fd]->eof)printf("%s eof set on.  19", sd->status.name);
 
 	for (i = 0; i < 14; i++) {
 		if (sd->status.equip[i].id > 0) {
@@ -5118,37 +5096,61 @@ int clif_parsewalk(USER *sd) {
 	sl_doscript_blargs("onScriptedTile", NULL, 1, &sd->bl);
 	pc_runfloor_sub(sd);
 	//map_foreachincell(pc_runfloor_sub,sd->bl.m,sd->bl.x,sd->bl.y,BL_NPC,sd,0,subt);
-	int fm=0,fx=0,fy=0;
-	int zm=0,zx=0,zy=0;
-	fm=sd->bl.m;
-	fx=sd->bl.x;
-	fy=sd->bl.y;
-	if(fx>=map[fm].xs) fx=map[fm].xs-1;
-	if(fy>=map[fm].ys) fy=map[fm].ys-1;
-	for(x=map[fm].warp[fx/BLOCK_SIZE+(fy/BLOCK_SIZE)*map[fm].bxs];x && !c;x=x->next) {
-		if(x->x==fx && x->y==fy) {
-			zm=x->tm;
-			zx=x->tx;
-			zy=x->ty;
-			c=1;
+	int fm = 0, fx = 0, fy = 0;
+	int zm = 0, zx = 0, zy = 0;
+	fm = sd->bl.m;
+	fx = sd->bl.x;
+	fy = sd->bl.y;
+	if (fx >= map[fm].xs) fx = map[fm].xs - 1;
+	if (fy >= map[fm].ys) fy = map[fm].ys - 1;
+	for (x = map[fm].warp[fx / BLOCK_SIZE + (fy / BLOCK_SIZE) * map[fm].bxs]; x && !c; x = x->next) {
+		if (x->x == fx && x->y == fy) {
+			zm = x->tm;
+			zx = x->tx;
+			zy = x->ty;
+			c = 1;
 		}
 	}
-
 
 	/*zm=map[fm].warp[fx+fy*map[fm].xs].tm;
 	zx=map[fm].warp[fx+fy*map[fm].xs].tx;
 	zy=map[fm].warp[fx+fy*map[fm].xs].ty;
 	*/
-	if(zx || zy || zm) {
-		pc_warp(sd,zm,zx,zy);
+	if (zx || zy || zm) {
+		if ((sd->status.level < map[zm].reqlvl || (sd->status.basehp < map[zm].reqvita && sd->status.basemp < map[zm].reqmana) || sd->status.mark < map[zm].reqmark || (map[zm].reqpath > 0 && sd->status.class != map[zm].reqpath)) && sd->status.gm_level == 0) {
+			clif_pushback(sd);
+
+			if (strcmpi(map[zm].maprejectmsg, "") == 0) {
+				if (abs(map[zm].reqlvl - sd->status.level) >= 10) { clif_sendminitext(sd, "Nightmarish visions of your own death repel you."); }
+				else if (abs(map[zm].reqlvl - sd->status.level) >= 5 && map[zm].reqlvl - sd->status.level < 10) { clif_sendminitext(sd, "You're not quite ready to enter yet."); }
+				else if (abs(map[zm].reqlvl - sd->status.level) < 5) { clif_sendminitext(sd, "You almost understand the secrets to this entrance."); }
+				else if (sd->status.mark < map[zm].reqmark) { clif_sendminitext(sd, "You do not understand the secrets to enter."); }
+				else if (map[zm].reqpath > 0 && sd->status.class != map[zm].reqpath) { clif_sendminitext(sd, "Your path forbids it."); }
+				else {
+					clif_sendminitext(sd, "A powerful force repels you.");
+				}
+			}
+			else { clif_sendminitext(sd, map[zm].maprejectmsg); }
+
+			return 0;
+		}
+		if ((sd->status.level > map[zm].lvlmax || (sd->status.basehp > map[zm].vitamax && sd->status.basemp > map[zm].manamax)) && sd->status.gm_level == 0) {
+			clif_pushback(sd);
+			clif_sendminitext(sd, "A magical barrier prevents you from entering.");
+			return 0;
+		}
+
+		pc_warp(sd, zm, zx, zy);
+		//sd->LastWalkTick = 0;
 	}
 
 	//sd->canmove=0;
 	//sd->iswalking=0;
+
 	return 0;
 }
 
-int clif_noparsewalk(USER *sd, char speed) {
+int clif_noparsewalk(USER* sd, char speed) {
 	int moveblock;
 	char nothingnew;
 	char flag;
@@ -5157,37 +5159,12 @@ int clif_noparsewalk(USER *sd, char speed) {
 	int x0 = 0, y0 = 0, x1 = 0, y1 = 0, direction = 0;
 	int xcheck, ycheck;
 	unsigned short m = sd->bl.m;
-	char *buf = NULL;
+	char* buf = NULL;
 	int def[2];
 	int subt[1];
 	subt[0] = 0;
 	def[0] = 0;
 	def[1] = 0;
-
-/* Debug
-    short packet[16];
-    char str1[15];
-	packet[0] = RFIFOB(sd->fd,3);
-    packet[1] = RFIFOB(sd->fd,4);
-    packet[2] = RFIFOB(sd->fd,5);
-    packet[3] = RFIFOB(sd->fd,6);
-    packet[4] = RFIFOB(sd->fd,7);
-    packet[5] = RFIFOB(sd->fd,8);
-    packet[6] = RFIFOB(sd->fd,9);
-    packet[7] = RFIFOB(sd->fd,10);
-    packet[8] = RFIFOB(sd->fd,11);
-    packet[9] = RFIFOB(sd->fd,12);
-    packet[10] = RFIFOB(sd->fd,13);
-    packet[11] = RFIFOB(sd->fd,14);
-    packet[12] = RFIFOB(sd->fd,15);
-    packet[13] = RFIFOB(sd->fd,16);
-    packet[14] = RFIFOB(sd->fd,17);
-    packet[15] = RFIFOB(sd->fd,18);
-
-    sprintf(str1, "%d-%d-%d-%d-%d-%d-%d-%d-%d-%d-%d-%d-%d-%d-%d-%d", packet[0], packet[1], packet[2], packet[3], packet[4], packet[5], packet[6], packet[7], packet[8], packet[9], packet[10], packet[11], packet[12], packet[13], packet[14], packet[15]);
-    clif_broadcast(str1, -1);
-
-*/
 
 	xold = dx = sd->bl.x;
 	yold = dy = sd->bl.y;
@@ -5210,9 +5187,12 @@ int clif_noparsewalk(USER *sd, char speed) {
 
 	//x0 = sd->bl.x;
 	//y0 = sd->bl.y;
+
+	if (!map[sd->bl.m].canMount && sd->status.state == 3 && !sd->status.gm_level) sl_doscript_blargs("onDismount", NULL, 1, &sd->bl);
+
 	direction = sd->status.side;
 
-	switch(direction) {
+	switch (direction) {
 	case 0:
 		dy--;
 		x0 = sd->bl.x - (sd->viewx + 1);
@@ -5276,7 +5256,7 @@ int clif_noparsewalk(USER *sd, char speed) {
 	if (sd->viewy > 14) sd->viewy = 14;
 
 	if (sd->status.settingFlags & FLAG_FASTMOVE) {
-		sd->status.settingFlags^=FLAG_FASTMOVE;
+		sd->status.settingFlags ^= FLAG_FASTMOVE;
 		clif_sendstatus(sd, NULL);
 		flag = 1;
 	}
@@ -5287,7 +5267,7 @@ int clif_noparsewalk(USER *sd, char speed) {
 		return 0;
 	}
 
-	WFIFOHEAD(sd->fd,15);
+	WFIFOHEAD(sd->fd, 15);
 	WFIFOB(sd->fd, 0) = 0xAA;
 	WFIFOB(sd->fd, 1) = 0x00;
 	WFIFOB(sd->fd, 2) = 0x0C;
@@ -5296,30 +5276,13 @@ int clif_noparsewalk(USER *sd, char speed) {
 	WFIFOB(sd->fd, 5) = direction;
 	WFIFOW(sd->fd, 6) = SWAP16(xold);
 	WFIFOW(sd->fd, 8) = SWAP16(yold);
-	//if (x0 > 0 && x0 < map[m].xs - 1) {
-	//if ((dx >= 0 && dx <= sd->viewx) || (dx <= map[m].xs - 1 && dx >= map[m].xs - 1 - abs(sd->viewx - 16))) {
-		WFIFOW(sd->fd, 10) = SWAP16(sd->viewx);
-	//} else {
-	//	WFIFOW(sd->fd, 10) = SWAP16(dx);
-	//}
-	//if (y0 > 0 && y0 < map[m].xs - 1) {
-	//if ((dy >= 0 && dy <= sd->viewy) || (dy <= map[m].ys - 1 && dy >= map[m].ys - 1 - abs(sd->viewy - 14))) {
-		WFIFOW(sd->fd, 12) = SWAP16(sd->viewy);
-	//} else {
-	//	WFIFOW(sd->fd, 12) = SWAP16(dy);
-	//}
-	/*if (x0 >= 0 && y0 >= 0 && x1 <= map[m].xs && y1 <= map[m].ys) {
-		WFIFOW(sd->fd, 10) = SWAP16(8);
-		WFIFOW(sd->fd, 12) = SWAP16(7);
-	} else {
-		WFIFOW(sd->fd, 10) = SWAP16(dx);
-		WFIFOW(sd->fd, 12) = SWAP16(dy);
-	}*/
+	WFIFOW(sd->fd, 10) = SWAP16(sd->viewx);
+	WFIFOW(sd->fd, 12) = SWAP16(sd->viewy);
 	WFIFOB(sd->fd, 14) = 0x00;
 	WFIFOSET(sd->fd, encrypt(sd->fd));
 
 	if (flag == 1) {
-		sd->status.settingFlags^=FLAG_FASTMOVE;
+		sd->status.settingFlags ^= FLAG_FASTMOVE;
 		clif_sendstatus(sd, NULL);
 		flag = 0;
 	}
@@ -5337,24 +5300,22 @@ int clif_noparsewalk(USER *sd, char speed) {
 
 	if (sd->optFlags & optFlag_stealth) {
 		clif_sendtogm(buf, 32, &sd->bl, AREA_WOS);
-	} else {
+	}
+	else {
 		clif_send(buf, 32, &sd->bl, AREA_WOS);
 	}
 	FREE(buf);
 
 	map_moveblock(&sd->bl, dx, dy);
 
-
-///Necessary at all?
 	if (x0 >= 0 && y0 >= 0 && x0 + (x1 - 1) < map[m].xs && y0 + (y1 - 1) < map[m].ys) {
-
-
-//		clif_mob_look_start(sd);
-		map_foreachinblock(clif_object_look_sub2, m, x0, y0, x0 + (x1 - 1), y0 + (y1 - 1), BL_ALL, LOOK_GET, sd);
-//		clif_mob_look_close(sd);
+		clif_sendmapdata(sd, m, x0, y0, x1, y1, 0);
+		clif_mob_look_start(sd);
+		map_foreachinblock(clif_object_look_sub, m, x0, y0, x0 + (x1 - 1), y0 + (y1 - 1), BL_ALL, LOOK_GET, sd);
+		clif_mob_look_close(sd);
 		map_foreachinblock(clif_charlook_sub, m, x0, y0, x0 + (x1 - 1), y0 + (y1 - 1), BL_PC, LOOK_GET, sd);
-//		map_foreachinblock(clif_cnpclook_sub, m, x0, y0, x0 + (x1 - 1), y0 + (y1 - 1), BL_NPC, LOOK_GET, sd);
-//		map_foreachinblock(clif_cmoblook_sub, m, x0, y0, x0 + (x1 - 1), y0 + (y1 - 1), BL_MOB, LOOK_GET, sd);
+		map_foreachinblock(clif_cnpclook_sub, m, x0, y0, x0 + (x1 - 1), y0 + (y1 - 1), BL_NPC, LOOK_GET, sd);
+		map_foreachinblock(clif_cmoblook_sub, m, x0, y0, x0 + (x1 - 1), y0 + (y1 - 1), BL_MOB, LOOK_GET, sd);
 		map_foreachinblock(clif_charlook_sub, m, x0, y0, x0 + (x1 - 1), y0 + (y1 - 1), BL_PC, LOOK_SEND, sd);
 	}
 
@@ -5380,6 +5341,30 @@ int clif_noparsewalk(USER *sd, char speed) {
 	}
 
 	if (zx || zy || zm) {
+		if ((sd->status.level < map[zm].reqlvl || (sd->status.basehp < map[zm].reqvita && sd->status.basemp < map[zm].reqmana) || sd->status.mark < map[zm].reqmark || (map[zm].reqpath > 0 && sd->status.class != map[zm].reqpath)) && sd->status.gm_level == 0) {
+			clif_pushback(sd);
+
+			if (strcmpi(map[zm].maprejectmsg, "") == 0) {
+				if (abs(map[zm].reqlvl - sd->status.level) >= 10) { clif_sendminitext(sd, "Nightmarish visions of your own death repel you."); }
+				else if (abs(map[zm].reqlvl - sd->status.level) >= 5 && map[zm].reqlvl - sd->status.level < 10) { clif_sendminitext(sd, "You're not quite ready to enter yet."); }
+				else if (abs(map[zm].reqlvl - sd->status.level) < 5) { clif_sendminitext(sd, "You almost understand the secrets to this entrance."); }
+				else if (sd->status.mark < map[zm].reqmark) { clif_sendminitext(sd, "You do not understand the secrets to enter."); }
+				else if (map[zm].reqpath > 0 && sd->status.class != map[zm].reqpath) { clif_sendminitext(sd, "Your path forbids it."); }
+				else {
+					clif_sendminitext(sd, "A powerful force repels you.");
+				}
+			}
+			else { clif_sendminitext(sd, map[zm].maprejectmsg); }
+
+			return 0;
+		}
+		if ((sd->status.level > map[zm].lvlmax || (sd->status.basehp > map[zm].vitamax && sd->status.basemp > map[zm].manamax)) && sd->status.gm_level == 0) {
+			clif_pushback(sd);
+			clif_sendminitext(sd, "A magical barrier prevents you from entering.");
+			return 0;
+		}
+
+		//sd->LastWalkTick = 0;
 		pc_warp(sd, zm, zx, zy);
 	}
 
