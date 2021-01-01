@@ -55,6 +55,29 @@ int logif_parse_usedname(int fd) {
 	WFIFOSET(fd, 5);
 	return 0;
 }
+
+int logif_debug(unsigned char* stringthing, int len) {
+	int i;
+
+	for (i = 0; i < len; i++) {
+		printf("%02X ", stringthing[i]);
+	}
+
+	printf("\n");
+
+	for (i = 0; i < len; i++) {
+		if (stringthing[i] <= 32 || stringthing[i] > 126) {
+			printf("   ");
+		}
+		else {
+			printf("%02c ", stringthing[i]);
+		}
+	}
+
+	printf("\n");
+	return 0;
+}
+
 int logif_parse_newchar(int fd) {
 	int res;
 	res = char_db_newchar(RFIFOP(fd, 4), RFIFOP(fd, 20), RFIFOB(fd, 39), RFIFOB(fd, 37) % 2, RFIFOB(fd, 38), RFIFOB(fd, 36), RFIFOB(fd, 40), RFIFOB(fd, 42), RFIFOB(fd, 41));

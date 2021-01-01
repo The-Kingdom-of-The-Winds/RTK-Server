@@ -413,7 +413,7 @@ int clif_parse(int fd) {
 			WFIFOB(fd, 9) = 0x00;
 			//added stuff for baram?
 			WFIFOB(fd, 10) = 0x09;
-			strcpy(WFIFOP(fd, 11), "KruIn7inc");
+			strcpy(WFIFOP(fd, 11), "NexonInc."); //KruIn7inc
 			//set_packet_indexes(WFIFOP(fd, 0));
 			WFIFOSET(fd, 20);
 		}
@@ -529,17 +529,16 @@ int clif_parse(int fd) {
 		if (!strlen(sd->name) || !strlen(sd->pass))
 			session[fd]->eof = 1;
 
-		sd->face = RFIFOB(fd, 6);
-		sd->sex = RFIFOB(fd, 10);
+		sd->face = RFIFOB(fd, 5);
+		sd->sex = RFIFOB(fd,6);
+		sd->country = RFIFOB(fd, 7);
+		sd->totem = RFIFOB(fd, 8);
 
-		int startCountry = rand() % 2;
-
-		sd->country = startCountry;
-
-		sd->totem = RFIFOB(fd, 12);
-		sd->hair = RFIFOB(fd, 7);
-		sd->face_color = RFIFOB(fd, 8);
-		sd->hair_color = RFIFOB(fd, 9);
+		//int startCountry = rand() % 2;
+		//sd->country = startCountry;
+		//sd->hair = RFIFOB(fd, 7);
+		//sd->face_color = RFIFOB(fd, 8);
+		//sd->hair_color = RFIFOB(fd, 9);
 
 		if (char_fd) {
 			WFIFOHEAD(char_fd, 43);
