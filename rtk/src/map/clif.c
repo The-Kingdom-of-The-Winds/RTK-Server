@@ -12968,42 +12968,24 @@ int clif_clickonplayer(USER* sd, struct block_list* bl) {
 	//Name
 	WFIFOB(sd->fd, len + 5) = strlen(tsd->status.name);
 	strcpy(WFIFOP(sd->fd, len + 6), tsd->status.name);
-	len += strlen(tsd->status.name);
+	len += strlen(tsd->status.name) + 1;
 
-	//WFIFOW(sd->fd,len+5)=SWAP16(1);
-	//len-=1;
-	WFIFOW(sd->fd, len + 6) = SWAP16(tsd->status.sex);
-	WFIFOB(sd->fd, len + 8) = tsd->status.state;
+	WFIFOW(sd->fd, len + 5) = SWAP16(tsd->status.sex);
+	WFIFOB(sd->fd, len + 7) = tsd->status.state;
+	WFIFOB(sd->fd, len + 8) = tsd->status.face; //face
+	WFIFOB(sd->fd, len + 9) = tsd->status.hair_color; //hair color
 
-	WFIFOW(sd->fd, len + 9) = SWAP16(0);
-	WFIFOB(sd->fd, len + 11) = tsd->speed;
-
-	if (tsd->status.state == 3) {
-		WFIFOW(sd->fd, len + 9) = SWAP16(tsd->disguise);
-	}
-	else if (tsd->status.state == 4) {
-		WFIFOW(sd->fd, len + 9) = SWAP16(tsd->disguise + 32768);
-		WFIFOB(sd->fd, len + 11) = tsd->disguise_color;
-	}
-
-	WFIFOB(sd->fd, len + 12) = 0;
-	WFIFOB(sd->fd, len + 13) = tsd->status.face; //face
-	WFIFOB(sd->fd, len + 14) = tsd->status.hair; //hair
-	WFIFOB(sd->fd, len + 15) = tsd->status.hair_color; //hair color
-	WFIFOB(sd->fd, len + 16) = tsd->status.face_color;
-	WFIFOB(sd->fd, len + 17) = tsd->status.skin_color;
-
-	len += 14;
+	len += 5;
 
 	if (!pc_isequip(tsd, EQ_ARMOR)) {
-		WFIFOW(sd->fd, len + 4) = SWAP16(tsd->status.sex);
+		WFIFOB(sd->fd, len + 5) = tsd->status.sex;
 	}
 	else {
 		if (tsd->status.equip[EQ_ARMOR].customLook != 0) {
-			WFIFOW(sd->fd, len + 4) = SWAP16(tsd->status.equip[EQ_ARMOR].customLook);
+			WFIFOB(sd->fd, len + 5) = tsd->status.equip[EQ_ARMOR].customLook;
 		}
 		else {
-			WFIFOW(sd->fd, len + 4) = SWAP16(itemdb_look(pc_isequip(tsd, EQ_ARMOR)));
+			WFIFOB(sd->fd, len + 5) = itemdb_look(pc_isequip(tsd, EQ_ARMOR));
 		}
 
 		if (tsd->status.armor_color > 0) {
@@ -13018,262 +13000,145 @@ int clif_clickonplayer(USER* sd, struct block_list* bl) {
 			}
 		}
 	}
-	//coat
-	if (pc_isequip(tsd, EQ_COAT)) {
-		WFIFOW(sd->fd, len + 4) = SWAP16(itemdb_look(pc_isequip(tsd, EQ_COAT)));
+	len += 2;
 
-		if (tsd->status.armor_color > 0) {
-			WFIFOB(sd->fd, len + 6) = tsd->status.armor_color;
-		}
-		else {
-			WFIFOB(sd->fd, len + 6) = itemdb_lookcolor(pc_isequip(tsd, EQ_COAT));
-		}
-	}
-
-	len += 3;
 	//weapon
 	if (!pc_isequip(tsd, EQ_WEAP)) {
-		WFIFOW(sd->fd, len + 4) = 0xFFFF;
-		WFIFOB(sd->fd, len + 6) = 0;
+		WFIFOW(sd->fd, len + 5) = 0xFFFF;
+		WFIFOB(sd->fd, len + 7) = 0;
 	}
 	else {
 		if (tsd->status.equip[EQ_WEAP].customLook != 0) { // edited on 07-16-2017 to support custom WEapon Skins
-			WFIFOW(sd->fd, len + 4) = SWAP16(tsd->status.equip[EQ_WEAP].customLook);
-			WFIFOB(sd->fd, len + 6) = tsd->status.equip[EQ_WEAP].customLookColor;
+			WFIFOW(sd->fd, len + 5) = SWAP16(tsd->status.equip[EQ_WEAP].customLook);
+			WFIFOB(sd->fd, len + 7) = tsd->status.equip[EQ_WEAP].customLookColor;
 		}
 		else {
-			WFIFOW(sd->fd, len + 4) = SWAP16(itemdb_look(pc_isequip(tsd, EQ_WEAP)));
-			WFIFOB(sd->fd, len + 6) = itemdb_lookcolor(pc_isequip(tsd, EQ_WEAP));
+			WFIFOW(sd->fd, len + 5) = SWAP16(itemdb_look(pc_isequip(tsd, EQ_WEAP)));
+			WFIFOB(sd->fd, len + 7) = itemdb_lookcolor(pc_isequip(tsd, EQ_WEAP));
 		}
 	}
 	len += 3;
+
 	//shield
 	if (!pc_isequip(tsd, EQ_SHIELD)) {
-		WFIFOW(sd->fd, len + 4) = 0xFFFF;
+		WFIFOB(sd->fd, len + 5) = 0xFF;
 		WFIFOB(sd->fd, len + 6) = 0;
 	}
 	else {
 		if (tsd->status.equip[EQ_SHIELD].customLook != 0) {
-			WFIFOW(sd->fd, len + 4) = SWAP16(tsd->status.equip[EQ_SHIELD].customLook);
+			WFIFOB(sd->fd, len + 5) = tsd->status.equip[EQ_SHIELD].customLook;
 			WFIFOB(sd->fd, len + 6) = tsd->status.equip[EQ_SHIELD].customLookColor;
 		}
 		else {
-			WFIFOW(sd->fd, len + 4) = SWAP16(itemdb_look(pc_isequip(tsd, EQ_SHIELD)));
+			WFIFOB(sd->fd, len + 5) = itemdb_look(pc_isequip(tsd, EQ_SHIELD));
 			WFIFOB(sd->fd, len + 6) = itemdb_lookcolor(pc_isequip(tsd, EQ_SHIELD));
 		}
 	}
-	len += 3;
-	if (!pc_isequip(tsd, EQ_HELM) || !(tsd->status.settingFlags & FLAG_HELM) || (itemdb_look(pc_isequip(tsd, EQ_HELM)) == -1)) {
-		//helm stuff goes here
-		WFIFOB(sd->fd, len + 4) = 0; // supposed to be 1=Helm, 0=No helm
-		WFIFOW(sd->fd, len + 5) = 0xFFFF; // supposed to be Helm num
-	}
-	else {
-		WFIFOB(sd->fd, len + 4) = 1;
+	len += 2;
 
-		if (tsd->status.equip[EQ_HELM].customLook != 0) {
-			WFIFOB(sd->fd, len + 5) = tsd->status.equip[EQ_HELM].customLook;
-			WFIFOB(sd->fd, len + 6) = tsd->status.equip[EQ_HELM].customLookColor;
-		}
-		else {
-			WFIFOB(sd->fd, len + 5) = itemdb_look(pc_isequip(tsd, EQ_HELM));
-			WFIFOB(sd->fd, len + 6) = itemdb_lookcolor(pc_isequip(tsd, EQ_HELM));
-		}
-	}
-	len += 3;
-	//faceacc
-	if (!pc_isequip(tsd, EQ_FACEACC)) {
-		//beard stuff
-		WFIFOW(sd->fd, len + 4) = 0xFFFF;
-		WFIFOB(sd->fd, len + 6) = 0;
-	}
-	else {
-		WFIFOW(sd->fd, len + 4) = SWAP16(itemdb_look(pc_isequip(tsd, EQ_FACEACC))); //beard num
-		WFIFOB(sd->fd, len + 6) = itemdb_lookcolor(pc_isequip(tsd, EQ_FACEACC)); //beard color
-	}
-	len += 3;
-	//crown
-	if (!pc_isequip(tsd, EQ_CROWN)) {
-		WFIFOW(sd->fd, len + 4) = 0xFFFF;
-		WFIFOB(sd->fd, len + 6) = 0;
-	}
-	else {
-		WFIFOB(sd->fd, len) = 0;
 
-		if (tsd->status.equip[EQ_CROWN].customLook != 0) {
-			WFIFOW(sd->fd, len + 4) = SWAP16(tsd->status.equip[EQ_CROWN].customLook); //Crown
-			WFIFOB(sd->fd, len + 6) = tsd->status.equip[EQ_CROWN].customLookColor; //Crown color
-		}
-		else {
-			WFIFOW(sd->fd, len + 4) = SWAP16(itemdb_look(pc_isequip(tsd, EQ_CROWN))); //Crown
-			WFIFOB(sd->fd, len + 6) = itemdb_lookcolor(pc_isequip(tsd, EQ_CROWN)); //Crown color
-		}
+	//helm
+	if (!pc_isequip(tsd,EQ_HELM)) {
+		WFIFOW(sd->fd, len + 5)=0xFFFF;
+		WFIFOB(sd->fd, len + 7)=0;
+	} else {
+		WFIFOW(sd->fd, len + 5)=SWAP16(itemdb_icon(pc_isequip(tsd,EQ_HELM)));
+		WFIFOB(sd->fd, len + 7)=itemdb_iconcolor(pc_isequip(tsd,EQ_HELM));
 	}
-	len += 3;
+	len+=3;
 
-	if (!pc_isequip(tsd, EQ_FACEACCTWO)) {
-		WFIFOW(sd->fd, len + 4) = 0xFFFF; //second face acc
-		WFIFOB(sd->fd, len + 6) = 0; //" color
+	//Left
+	if (!pc_isequip(tsd,EQ_LEFT)) {
+		WFIFOW(sd->fd, len + 5)=0xFFFF;
+		WFIFOB(sd->fd, len + 7)=0;
+	} else {
+		WFIFOW(sd->fd, len + 5)=SWAP16(itemdb_icon(pc_isequip(tsd,EQ_LEFT)));
+		WFIFOB(sd->fd, len + 7)=itemdb_iconcolor(pc_isequip(tsd,EQ_LEFT));
 	}
-	else {
-		WFIFOW(sd->fd, len + 4) = SWAP16(itemdb_look(pc_isequip(tsd, EQ_FACEACCTWO)));
-		WFIFOB(sd->fd, len + 6) = itemdb_lookcolor(pc_isequip(tsd, EQ_FACEACCTWO));
-	}
+	len+=3;
 
-	len += 3;
-	//mantle
-	if (!pc_isequip(tsd, EQ_MANTLE)) {
-		WFIFOW(sd->fd, len + 4) = 0xFFFF;
-		WFIFOB(sd->fd, len + 6) = 0xFF;
+	//Right
+	if (!pc_isequip(tsd,EQ_RIGHT)) {
+		WFIFOW(sd->fd, len + 5)=0xFFFF;
+		WFIFOB(sd->fd, len + 7)=0;
+	} else {
+		WFIFOW(sd->fd, len + 5)=SWAP16(itemdb_icon(pc_isequip(tsd,EQ_RIGHT)));
+		WFIFOB(sd->fd, len + 7)=itemdb_iconcolor(pc_isequip(tsd,EQ_RIGHT));
 	}
-	else {
-		WFIFOW(sd->fd, len + 4) = SWAP16(itemdb_look(pc_isequip(tsd, EQ_MANTLE)));
-		WFIFOB(sd->fd, len + 6) = itemdb_lookcolor(pc_isequip(tsd, EQ_MANTLE));
-	}
-	len += 3;
+	len+=3;
+	
+	len += 6; //unknown
 
-	//necklace
-	if (!pc_isequip(tsd, EQ_NECKLACE) || !(tsd->status.settingFlags & FLAG_NECKLACE) || (itemdb_look(pc_isequip(tsd, EQ_NECKLACE)) == -1)) {
-		WFIFOW(sd->fd, len + 4) = 0xFFFF;
-		WFIFOB(sd->fd, len + 6) = 0;
-	}
-	else {
-		WFIFOW(sd->fd, len + 4) = SWAP16(itemdb_look(pc_isequip(tsd, EQ_NECKLACE))); //necklace
-		WFIFOB(sd->fd, len + 6) = itemdb_lookcolor(pc_isequip(tsd, EQ_NECKLACE)); //neckalce color
-	}
-	len += 3;
-	//boots
-	if (!pc_isequip(tsd, EQ_BOOTS)) {
-		WFIFOW(sd->fd, len + 4) = SWAP16(tsd->status.sex); //boots
-		WFIFOB(sd->fd, len + 6) = 0;
-	}
-	else {
-		if (tsd->status.equip[EQ_BOOTS].customLook != 0) {
-			WFIFOW(sd->fd, len + 4) = SWAP16(tsd->status.equip[EQ_BOOTS].customLook);
-			WFIFOB(sd->fd, len + 6) = tsd->status.equip[EQ_BOOTS].customLookColor;
-		}
-		else {
-			WFIFOW(sd->fd, len + 4) = SWAP16(itemdb_look(pc_isequip(tsd, EQ_BOOTS)));
-			WFIFOB(sd->fd, len + 6) = itemdb_lookcolor(pc_isequip(tsd, EQ_BOOTS));
-		}
-	}
+	for(x = 0; x < 6; x++) {
 
-	len += 3;
-	//WFIFOL(sd->fd,len+6)=0;
-	//len+=4;
-	for (x = 0; x < 14; x++) {
-		if (tsd->status.equip[x].id > 0) {
-			if (tsd->status.equip[x].customIcon != 0) {
-				WFIFOW(sd->fd, len + 6) = SWAP16(tsd->status.equip[x].customIcon + 49152);
-				WFIFOB(sd->fd, len + 8) = tsd->status.equip[x].customIconColor;
-			}
-			else {
-				WFIFOW(sd->fd, len + 6) = SWAP16(itemdb_icon(tsd->status.equip[x].id));
-				WFIFOB(sd->fd, len + 8) = itemdb_iconcolor(tsd->status.equip[x].id);
-			}
-
-			len += 3;
-
-			if (strlen(tsd->status.equip[x].real_name)) {
-				sprintf(buf, "%s", tsd->status.equip[x].real_name);
-			}
-			else {
-				sprintf(buf, "%s", itemdb_name(tsd->status.equip[x].id));
-			}
-
-			WFIFOB(sd->fd, len + 6) = strlen(buf);
-			strcpy(WFIFOP(sd->fd, len + 7), buf);
-			len += strlen(buf) + 1;
-			WFIFOB(sd->fd, len + 6) = strlen(itemdb_name(tsd->status.equip[x].id));
-			strcpy(WFIFOP(sd->fd, len + 7), itemdb_name(tsd->status.equip[x].id));
-			len += strlen(itemdb_name(tsd->status.equip[x].id)) + 1;
-			WFIFOL(sd->fd, len + 6) = SWAP32(tsd->status.equip[x].dura);
-			len += 5;
-		}
-		else {
-			WFIFOW(sd->fd, len + 6) = SWAP16(0);
-			WFIFOB(sd->fd, len + 8) = 0;
-			WFIFOB(sd->fd, len + 9) = 0;
-			WFIFOB(sd->fd, len + 10) = 0;
-			WFIFOL(sd->fd, len + 11) = SWAP32(0);
-			len += 10;
-		}
-
-		if (tsd->status.equip[x].id > 0 && (itemdb_type(tsd->status.equip[x].id) >= 3) && (itemdb_type(tsd->status.equip[x].id) <= 16)) {
-			if (strlen(tsd->status.equip[x].real_name)) {
-				nameof = tsd->status.equip[x].real_name;
-			}
-			else {
+		if(tsd->status.equip[x].id > 0 && (itemdb_type(tsd->status.equip[x].id) >= 3) && (itemdb_type(tsd->status.equip[x].id) <= 16)) {
+			if(strlen(tsd->status.equip[x].real_name)) {
+				//nameof=tsd->status.equip[x].real_name;
+			} else {
 				nameof = itemdb_name(tsd->status.equip[x].id);
 			}
 
-			sprintf(buff, map_msg[clif_mapmsgnum(tsd, x)].message, nameof);
-			strcat(equip_status, buff);
-			strcat(equip_status, "\x0A");
+			sprintf(buff, map_msg[clif_mapmsgnum(tsd,x)].message,nameof);
+			strcat(equip_status,buff);
+			strcat(equip_status,"\x0A");
 		}
 	}
+
+	if(strlen(equip_status) == 0) {
+		strcat(equip_status,"No items equipped.");
+	}
+
+	equip_len = strlen(equip_status);
+	if(equip_len>255) equip_len=255;
+	WFIFOB(sd->fd,len + 5) = equip_len;
+	strcpy(WFIFOP(sd->fd,len + 6),equip_status);
+	len += equip_len + 1;
+
+	WFIFOL(sd->fd,len + 5)=SWAP32(bl->id);
+	len += 4;
 
 	if (strlen(equip_status) == 0) {
 		strcat(equip_status, "No items equipped.");
 	}
 
-	equip_len = strlen(equip_status);
-	if (equip_len > 255) equip_len = 255;
-	WFIFOB(sd->fd, len + 6) = equip_len;
-	strcpy(WFIFOP(sd->fd, len + 7), equip_status);
-	//printf("Len is %d\n",strlen(equip_status));
-	len += equip_len + 1;
-
-	WFIFOL(sd->fd, len + 6) = SWAP32(bl->id);
-	len += 4;
 
 	if (tsd->status.settingFlags & FLAG_GROUP) {
-		WFIFOB(sd->fd, len + 6) = 1;
+		WFIFOB(sd->fd, len + 5) = 1;
 	}
 	else {
-		WFIFOB(sd->fd, len + 6) = 0;
+		WFIFOB(sd->fd, len + 5) = 0;
 	}
 
 	if (tsd->status.settingFlags & FLAG_EXCHANGE) {
-		WFIFOB(sd->fd, len + 7) = 1;
+		WFIFOB(sd->fd, len + 5) = 1;
 	}
 	else {
-		WFIFOB(sd->fd, len + 7) = 0;
+		WFIFOB(sd->fd, len + 5) = 0;
 	}
 
-	WFIFOB(sd->fd, len + 8) = 2 - tsd->status.sex;
-	len += 3;
-
-	WFIFOW(sd->fd, len + 6) = 0;
 	len += 2;
 
-	memcpy(WFIFOP(sd->fd, len + 6), tsd->profilepic_data, tsd->profilepic_size);
-	len += tsd->profilepic_size;
+	WFIFOB(sd->fd, len + 5) = 1;
+	len += 1;
 
-	memcpy(WFIFOP(sd->fd, len + 6), tsd->profile_data, tsd->profile_size);
-	len += tsd->profile_size;
+	WFIFOB(sd->fd, len + 5) = 2 - tsd->status.sex;
+	len += 1;
 
-	/*if(tsd->profile_size==0) {
-		WFIFOW(sd->fd,len+6)=0;
-		len+=2;
-		WFIFOB(sd->fd,len+6)=0;
-		len+=1;
-		//WFIFOB(sd->fd,len+6)=0;
-		//len+=1;
+	// memcpy(WFIFOP(sd->fd, len + 5), tsd->profilepic_data, tsd->profilepic_size);
+	// len += tsd->profilepic_size;
+
+	// memcpy(WFIFOP(sd->fd, len + 5), tsd->profile_data, tsd->profile_size);
+	// len += tsd->profile_size;
+
+	//profile
+	if(tsd->profile_size==0) {
+		WFIFOB(sd->fd,len + 5)=0;
+		len += 1;
 	} else {
-		WFIFOB
-		WFIFOB(sd->fd, len + 6) = tsd->profile_size;
-		memcpy(WFIFOP(sd->fd, len + 7), tsd->profile_data, tsd->profile_size);
+		WFIFOB(sd->fd, len + 5) = tsd->profile_size;
+		memcpy(WFIFOP(sd->fd, len + 6), tsd->profile_data, tsd->profile_size);
 		len += tsd->profile_size + 1;
-	}*/
-	//WFIFOB(sd->fd,len+7)=0;
-
-	/*WFIFOB(sd->fd,len+6)=strlen(tsd->profile_text);
-	strcpy(WFIFOP(sd->fd,len+7),tsd->profile_text);
-
-	len+=strlen(tsd->profile_text)+1;
-	*/
-	//WFIFOW(sd->fd,len+6)=0;
+	}
 
 	for (x = 0; x < MAX_LEGENDS; x++) {
 		if (strlen(tsd->status.legends[x].text) && strlen(tsd->status.legends[x].name)) {
@@ -13281,36 +13146,38 @@ int clif_clickonplayer(USER* sd, struct block_list* bl) {
 		}
 	}
 
-	WFIFOW(sd->fd, len + 6) = SWAP16(count);
-	len += 2;
+	WFIFOW(sd->fd, len + 5) = count;
+	len += 1;
 
 	for (x = 0; x < MAX_LEGENDS; x++) {
 		if (strlen(tsd->status.legends[x].text) && strlen(tsd->status.legends[x].name)) {
-			WFIFOB(sd->fd, len + 6) = tsd->status.legends[x].icon;
-			WFIFOB(sd->fd, len + 7) = tsd->status.legends[x].color;
+			WFIFOB(sd->fd, len + 5) = tsd->status.legends[x].icon;
+			WFIFOB(sd->fd, len + 6) = tsd->status.legends[x].color;
 
 			if (tsd->status.legends[x].tchaid > 0) {
 				char* name = clif_getName(tsd->status.legends[x].tchaid);
 				char* buff = replace_str(&tsd->status.legends[x].text, "$player", name);
 
-				WFIFOB(sd->fd, len + 8) = strlen(buff);
-				memcpy(WFIFOP(sd->fd, len + 9), buff, strlen(buff));
+				WFIFOB(sd->fd, len + 7) = strlen(buff);
+				memcpy(WFIFOP(sd->fd, len + 8), buff, strlen(buff));
 				len += strlen(buff) + 3;
 			}
 			else {
-				WFIFOB(sd->fd, len + 8) = strlen(tsd->status.legends[x].text);
-				memcpy(WFIFOP(sd->fd, len + 9), tsd->status.legends[x].text, strlen(tsd->status.legends[x].text));
+				WFIFOB(sd->fd, len + 7) = strlen(tsd->status.legends[x].text);
+				memcpy(WFIFOP(sd->fd, len + 8), tsd->status.legends[x].text, strlen(tsd->status.legends[x].text));
 				len += strlen(tsd->status.legends[x].text) + 3;
 			}
 		}
 	}
 
-	WFIFOB(sd->fd, len + 6) = 3 - tsd->status.sex;
+	WFIFOB(sd->fd, len + 5) = 3 - tsd->status.sex;
 
-	if (clif_isregistered(tsd->status.id) > 0) WFIFOB(sd->fd, len + 7) = 1;
-	else WFIFOB(sd->fd, len + 7) = 0;
+	len += 1;
 
-	len += 5;
+	if (clif_isregistered(tsd->status.id) > 0) WFIFOB(sd->fd, len + 4) = 1;
+	else WFIFOB(sd->fd, len + 5) = 0;
+
+	len += 1;
 
 	WFIFOW(sd->fd, 1) = SWAP16(len + 3);
 	WFIFOSET(sd->fd, encrypt(sd->fd));
