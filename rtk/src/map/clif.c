@@ -183,6 +183,8 @@ int decrypt(int fd)
 	char key[16];
 	sd = (USER*)session[fd]->session_data;
 	crypt(RFIFOP(fd, 0));
+	printf("Packet Received: %02X Packet content:\n",RFIFOB(sd->fd, 3));
+	clif_debug(RFIFOP(sd->fd, 0), SWAP16(RFIFOW(sd->fd, 1)) + 3);
 	
 }
 
@@ -3028,7 +3030,7 @@ int clif_mystaytus(USER* sd) {
 	int tnl = clif_getLevelTNL(sd);
 	int len = 0;
 	nullpo_ret(0, sd);
-	float percentage = clif_getXPBarPercent(sd);
+	// float percentage = clif_getXPBarPercent(sd);
 
 	if (!session[sd->fd])
 	{
@@ -3088,21 +3090,27 @@ int clif_mystaytus(USER* sd) {
 		len += 1;
 	}
 
-	//partner
-	if (sd->status.partner) {
-		partner = map_id2name(sd->status.partner);
-		sprintf(buf, "Partner: %s", map_id2name(sd->status.partner));
-		FREE(partner);
+	// //partner
+	// if (sd->status.partner) {
+	// 	partner = map_id2name(sd->status.partner);
+	// 	sprintf(buf, "Partner: %s", map_id2name(sd->status.partner));
+	// 	FREE(partner);
 
-		WFIFOB(sd->fd, len + 8) = strlen(buf);
-		strcpy(WFIFOP(sd->fd, len + 9), buf);
-		len += strlen(buf) + 1;
-	}
-	else {
-		WFIFOB(sd->fd, len + 8) = 0; //this is where partner goes
-		//strcpy(WFIFOP(sd->fd,len+10),"Partner: TheStalker");
-		len += 1;
-	}
+	// 	WFIFOB(sd->fd, len + 8) = strlen(buf);
+	// 	strcpy(WFIFOP(sd->fd, len + 9), buf);
+	// 	len += strlen(buf) + 1;
+	// }
+	// else {
+	// 	WFIFOB(sd->fd, len + 8) = 0; //this is where partner goes
+	// 	//strcpy(WFIFOP(sd->fd,len+10),"Partner: TheStalker");
+	// 	len += 1;
+	// }
+
+	//profile
+	char test_profile[] = "test profile";
+	WFIFOB(sd->fd,len + 8) = strlen(test_profile);
+	memcpy(WFIFOP(sd->fd, len + 9), test_profile, strlen(test_profile));
+	len += strlen(test_profile) + 1;
 
 	if (sd->status.settingFlags & FLAG_GROUP) {
 		WFIFOB(sd->fd, len + 8) = 1; //group
@@ -3124,67 +3132,112 @@ int clif_mystaytus(USER* sd) {
 		len += 1;
 	}
 
-	for (x = 0; x < 14; x++) {
-		//if(x==EQ_MANTLE) printf("Mantle: %d\n",sd->status.equip[x].id);
-		if (sd->status.equip[x].id > 0) {
-			if (sd->status.equip[x].customIcon != 0) {
-				WFIFOW(sd->fd, len + 8) = SWAP16(sd->status.equip[x].customIcon + 49152);
-				WFIFOB(sd->fd, len + 10) = sd->status.equip[x].customIconColor;
-			}
-			else {
-				WFIFOW(sd->fd, len + 8) = SWAP16(itemdb_icon(sd->status.equip[x].id));
-				WFIFOB(sd->fd, len + 10) = itemdb_iconcolor(sd->status.equip[x].id);
-			}
+	// for (x = 0; x < 14; x++) {
+	// 	//if(x==EQ_MANTLE) printf("Mantle: %d\n",sd->status.equip[x].id);
+	// 	if (sd->status.equip[x].id > 0) {
+	// 		if (sd->status.equip[x].customIcon != 0) {
+	// 			WFIFOW(sd->fd, len + 8) = SWAP16(sd->status.equip[x].customIcon + 49152);
+	// 			WFIFOB(sd->fd, len + 10) = sd->status.equip[x].customIconColor;
+	// 		}
+	// 		else {
+	// 			WFIFOW(sd->fd, len + 8) = SWAP16(itemdb_icon(sd->status.equip[x].id));
+	// 			WFIFOB(sd->fd, len + 10) = itemdb_iconcolor(sd->status.equip[x].id);
+	// 		}
 
-			len += 3;
+	// 		len += 3;
 
-			if (strlen(sd->status.equip[x].real_name)) {
-				name = sd->status.equip[x].real_name;
-			}
-			else {
-				name = itemdb_name(sd->status.equip[x].id);
-			}
+	// 		if (strlen(sd->status.equip[x].real_name)) {
+	// 			name = sd->status.equip[x].real_name;
+	// 		}
+	// 		else {
+	// 			name = itemdb_name(sd->status.equip[x].id);
+	// 		}
 
-			strcpy(buf, name);
-			WFIFOB(sd->fd, len + 8) = strlen(buf);
-			strcpy(WFIFOP(sd->fd, len + 9), buf);
-			len += strlen(buf) + 1;
+	// 		strcpy(buf, name);
+	// 		WFIFOB(sd->fd, len + 8) = strlen(buf);
+	// 		strcpy(WFIFOP(sd->fd, len + 9), buf);
+	// 		len += strlen(buf) + 1;
 
-			WFIFOB(sd->fd, len + 8) = strlen(itemdb_name(sd->status.equip[x].id));
-			strcpy(WFIFOP(sd->fd, len + 9), itemdb_name(sd->status.equip[x].id));
-			len += strlen(itemdb_name(sd->status.equip[x].id)) + 1;
+	// 		WFIFOB(sd->fd, len + 8) = strlen(itemdb_name(sd->status.equip[x].id));
+	// 		strcpy(WFIFOP(sd->fd, len + 9), itemdb_name(sd->status.equip[x].id));
+	// 		len += strlen(itemdb_name(sd->status.equip[x].id)) + 1;
 
-			WFIFOL(sd->fd, len + 8) = SWAP32(sd->status.equip[x].dura);
-			WFIFOB(sd->fd, len + 12) = 0;
+	// 		WFIFOL(sd->fd, len + 8) = SWAP32(sd->status.equip[x].dura);
+	// 		WFIFOB(sd->fd, len + 12) = 0;
 
-			if (sd->status.equip[x].protected >= itemdb_protected(sd->status.equip[x].id)) WFIFOB(sd->fd, len + 12) = sd->status.equip[x].protected; // This is the default item protection from the database. it will always override the custom item protection that can be added to items.
-			if (itemdb_protected(sd->status.equip[x].id) >= sd->status.equip[x].protected) WFIFOB(sd->fd, len + 12) = itemdb_protected(sd->status.equip[x].id);
+	// 		if (sd->status.equip[x].protected >= itemdb_protected(sd->status.equip[x].id)) WFIFOB(sd->fd, len + 12) = sd->status.equip[x].protected; // This is the default item protection from the database. it will always override the custom item protection that can be added to items.
+	// 		if (itemdb_protected(sd->status.equip[x].id) >= sd->status.equip[x].protected) WFIFOB(sd->fd, len + 12) = itemdb_protected(sd->status.equip[x].id);
 
-			len += 5;
-		}
-		else {
-			WFIFOW(sd->fd, len + 8) = SWAP16(0);
-			WFIFOB(sd->fd, len + 10) = 0;
-			WFIFOB(sd->fd, len + 11) = 0;
-			WFIFOB(sd->fd, len + 12) = 0;
-			WFIFOL(sd->fd, len + 13) = SWAP32(0);
-			WFIFOB(sd->fd, len + 14) = 0;
-			len += 10;
-		}
+	// 		len += 5;
+	// 	}
+	// 	else {
+	// 		WFIFOW(sd->fd, len + 8) = SWAP16(0);
+	// 		WFIFOB(sd->fd, len + 10) = 0;
+	// 		WFIFOB(sd->fd, len + 11) = 0;
+	// 		WFIFOB(sd->fd, len + 12) = 0;
+	// 		WFIFOL(sd->fd, len + 13) = SWAP32(0);
+	// 		WFIFOB(sd->fd, len + 14) = 0;
+	// 		len += 10;
+	// 	}
+	// }
+
+	//helm
+	if (!pc_isequip(sd,EQ_HELM)) {
+		WFIFOW(sd->fd, len + 8)=0xFFFF;
+		WFIFOB(sd->fd, len + 10)=0;
+    } else {
+		WFIFOW(sd->fd, len + 8) = SWAP16(itemdb_icon(pc_isequip(sd,EQ_HELM)));
+		WFIFOB(sd->fd, len + 10) = itemdb_iconcolor(pc_isequip(sd,EQ_HELM));
 	}
+	len+=3;
+
+
+	//Left
+	if (!pc_isequip(sd,EQ_LEFT)) {
+		WFIFOW(sd->fd, len + 8 )=0xFFFF;
+		WFIFOB(sd->fd, len + 10)=0;
+	} else {
+		WFIFOW(sd->fd, len + 8 )=SWAP16(itemdb_icon(pc_isequip(sd,EQ_LEFT)));
+		WFIFOB(sd->fd, len + 10)=itemdb_iconcolor(pc_isequip(sd,EQ_LEFT));
+	}
+	len+=3;
+
+	//Right
+	if (!pc_isequip(sd,EQ_RIGHT)) {
+		WFIFOW(sd->fd, len + 8 )=0xFFFF;
+		WFIFOB(sd->fd, len + 10)=0;
+	} else {
+		WFIFOW(sd->fd, len + 8 )=SWAP16(itemdb_icon(pc_isequip(sd,EQ_RIGHT)));
+		WFIFOB(sd->fd, len + 10)=itemdb_iconcolor(pc_isequip(sd,EQ_RIGHT));
+	}
+	len+=3;
+
+	// //unknown
+	// WFIFOB(sd->fd, len) = 0;
+	// len += 1;
+
+	// WFIFOB(sd->fd, len) = 0;
+	// len += 1;
+
+	// WFIFOB(sd->fd, len) = 0;
+	// len += 1;
+
+	// WFIFOB(sd->fd, len) = 0;
+	// len += 1;
+
+	// WFIFOB(sd->fd, len) = 0;
+	// len += 1;
+
+	// WFIFOB(sd->fd, len) = 0;
+	// len += 1;
+
+	len += 7;
 
 	if (sd->status.settingFlags & FLAG_EXCHANGE) {
 		WFIFOB(sd->fd, len + 8) = 1;
 	}
 	else {
 		WFIFOB(sd->fd, len + 8) = 0;
-	}
-
-	if (sd->status.settingFlags & FLAG_GROUP) {
-		WFIFOB(sd->fd, len + 9) = 1;
-	}
-	else {
-		WFIFOB(sd->fd, len + 9) = 0;
 	}
 
 	len += 1;
@@ -3194,9 +3247,9 @@ int clif_mystaytus(USER* sd) {
 			count++;
 		}
 	}
-	WFIFOB(sd->fd, len + 8) = 0;
-	WFIFOW(sd->fd, len + 9) = SWAP16(count);
-	len += 3;
+	// WFIFOB(sd->fd, len + 8) = 0;
+	WFIFOW(sd->fd, len + 8) = count;
+	len += 1;
 
 	for (x = 0; x < MAX_LEGENDS; x++) {
 		if (strlen(sd->status.legends[x].text) && strlen(sd->status.legends[x].name)) {
@@ -3220,6 +3273,29 @@ int clif_mystaytus(USER* sd) {
 
 	WFIFOW(sd->fd, 1) = SWAP16(len + 5);
 	WFIFOSET(sd->fd, encrypt(sd->fd));
+
+	//spells info
+	int xx;
+	struct skill_info *p = NULL;
+	USER* tsd = NULL;
+
+	nullpo_ret(0, sd);
+
+	for(xx = 0; xx < MAX_MAGIC_TIMERS; xx++) {
+		p = &sd->status.dura_aether[xx];
+
+		if(p->id > 0) {
+			if(p->duration > 0){
+				tsd = map_id2sd(p->caster_id);
+				clif_send_duration(sd, p->id, p->duration / 1000, map_id2sd(p->caster_id));
+			}
+			if(p->aether > 0) {
+				clif_send_aether(sd, p->id, p->aether / 1000);
+			}
+		}
+	}
+
+
 	return 0;
 }
 
