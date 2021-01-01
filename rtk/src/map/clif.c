@@ -1575,127 +1575,262 @@ int clif_mob_look_close_func(struct block_list* bl, va_list ap) {
 }
 
 int clif_object_look_sub(struct block_list* bl, va_list ap) {
+	// //set up our types
+	// USER* sd = NULL;
+	// MOB* mob = NULL;
+	// NPC* nd = NULL;
+	// FLOORITEM* item = NULL;
+	// struct block_list* b = NULL;
+	// int type;
+	// int x;
+	// int nlen = 0;
+	// int animlen = 0;
+	// //struct npc_data *npc=NULL;
+	// int len = 0;
+	// //end setup
+	// type = va_arg(ap, int);
+	// if (type == LOOK_SEND) {
+	// 	nullpo_ret(0, sd = (USER*)bl);
+	// 	nullpo_ret(0, b = va_arg(ap, struct block_list*));
+	// }
+	// else {
+	// 	nullpo_ret(0, sd = va_arg(ap, USER*));
+	// 	nullpo_ret(0, b = bl);
+	// }
+
+	// if (b->type == BL_PC) return 0;
+	// //len+11 = type
+	// len = sd->mob_len;
+	// WFIFOW(sd->fd, len + 7) = SWAP16(b->x);
+	// WFIFOW(sd->fd, len + 9) = SWAP16(b->y);
+	// WFIFOL(sd->fd, len + 11) = SWAP32(b->id);
+
+	// switch (b->type) {
+	// case BL_MOB:
+	// 	mob = (MOB*)b;
+
+	// 	if (mob->state == MOB_DEAD || mob->data->mobtype == 1) return 0;
+
+	// 	nlen = 0;
+	// 	animlen = 0;
+
+	// 	if (mob->data->isnpc == 0) {
+	// 		// WFIFOB(sd->fd, len + 11) = 0x05;
+	// 		WFIFOW(sd->fd, len + 15) = SWAP16(32768 + mob->look);
+	// 		WFIFOB(sd->fd, len + 17) = mob->look_color;
+	// 		WFIFOB(sd->fd, len + 18) = mob->side;
+	// 		WFIFOB(sd->fd, len + 19) = 0;
+	// 		WFIFOB(sd->fd, len + 20) = 0; //# of animations active
+	// 		for (x = 0; x < 50; x++) {
+	// 			if (mob->da[x].duration && mob->da[x].animation) {
+	// 				WFIFOW(sd->fd, nlen + len + 22) = SWAP16(mob->da[x].animation);
+	// 				WFIFOW(sd->fd, nlen + len + 22 + 2) = SWAP16(mob->da[x].duration / 1000);
+	// 				animlen++;
+	// 				nlen += 4;
+	// 			}
+	// 		}
+
+	// 		WFIFOB(sd->fd, len + 21) = animlen;
+	// 		WFIFOB(sd->fd, len + 22 + nlen) = 0; //pass flag
+	// 		sd->mob_len += 15 + nlen;
+	// 	}
+	// 	else if (mob->data->isnpc == 1) {
+	// 		// WFIFOB(sd->fd, len + 11) = 12;
+	// 		WFIFOW(sd->fd, len + 15) = SWAP16(32768 + mob->look);
+	// 		WFIFOB(sd->fd, len + 17) = mob->look_color;
+	// 		WFIFOB(sd->fd, len + 18) = mob->side + 2;
+	// 		WFIFOW(sd->fd, len + 19) = 0;
+	// 		WFIFOB(sd->fd, len + 20) = 0;
+	// 		WFIFOB(sd->fd, len + 21) = 0;
+	// 		sd->mob_len += 15;
+	// 	}
+
+	// 	break;
+	// case BL_NPC:
+	// 	nd = (NPC*)b;
+
+	// 	if (b->subtype || nd->bl.subtype || nd->npctype == 1) return 0;
+
+	// 	// WFIFOB(sd->fd, len + 11) = 12;
+	// 	WFIFOW(sd->fd, len + 15) = SWAP16(32768 + b->graphic_id);
+	// 	WFIFOB(sd->fd, len + 17) = b->graphic_color;
+	// 	WFIFOB(sd->fd, len + 18) = nd->side + 2;//Looking down
+	// 	WFIFOW(sd->fd, len + 19) = 0;
+	// 	WFIFOB(sd->fd, len + 20) = 0;
+	// 	WFIFOB(sd->fd, len + 21) = 0;
+	// 	//WFIFOB(sd->fd,len+22)=0;
+	// 	sd->mob_len += 15;
+	// 	break;
+	// case BL_ITEM:
+	// 	item = (FLOORITEM*)b;
+
+	// 	int inTable = 0;
+
+	// 	for (int j = 0; j < sizeof(item->data.trapsTable); j++) {
+	// 		if (item->data.trapsTable[j] == sd->status.id) inTable = 1;
+	// 	}
+
+	// 	//printf("func 1...  name: %s, inTable: %i\n",sd->status.name,inTable);
+
+	// 	if (itemdb_type(item->data.id) == ITM_TRAPS && !inTable) {
+	// 		return 0;
+	// 	}
+
+	// 	// WFIFOB(sd->fd, len + 11) = 0x02;
+
+	// 	if (item->data.customIcon != 0) {
+	// 		WFIFOW(sd->fd, len + 15) = SWAP16(item->data.customIcon + 49152);
+	// 		WFIFOB(sd->fd, len + 17) = item->data.customIconColor;
+	// 	}
+	// 	else {
+	// 		WFIFOW(sd->fd, len + 15) = SWAP16(itemdb_icon(item->data.id));
+	// 		WFIFOB(sd->fd, len + 17) = itemdb_iconcolor(item->data.id);
+	// 	}
+
+	// 	WFIFOB(sd->fd, len + 18) = 0;
+	// 	WFIFOW(sd->fd, len + 19) = 0;
+	// 	WFIFOB(sd->fd, len + 20) = 0;
+	// 	// WFIFOB(sd->fd, len + 21) = 0;
+	// 	sd->mob_len += 15;
+	// 	sd->mob_item = 1;
+	// 	break;
+	// }
+
+	// sd->mob_count++;
+	// return 0;
+
+	//use clif_object_look_sub2
 	//set up our types
-	USER* sd = NULL;
-	MOB* mob = NULL;
-	NPC* nd = NULL;
-	FLOORITEM* item = NULL;
-	struct block_list* b = NULL;
-	int type;
-	int x;
-	int nlen = 0;
-	int animlen = 0;
+	USER* sd=NULL;
+	MOB* mob=NULL;
+	NPC* nd=NULL;
+	FLOORITEM* item=NULL;
+	struct block_list* b=NULL;
 	//struct npc_data *npc=NULL;
-	int len = 0;
+	int type=0;
+	int len=0;
+	int nlen=0,x=0;
 	//end setup
-	type = va_arg(ap, int);
-	if (type == LOOK_SEND) {
-		nullpo_ret(0, sd = (USER*)bl);
-		nullpo_ret(0, b = va_arg(ap, struct block_list*));
-	}
-	else {
-		nullpo_ret(0, sd = va_arg(ap, USER*));
-		nullpo_ret(0, b = bl);
+	type=va_arg(ap,int);
+	if(type==LOOK_SEND) {
+		nullpo_ret(0,sd=(USER*)bl);
+		nullpo_ret(0,b=va_arg(ap,struct block_list*));
+	} else {
+		nullpo_ret(0,sd=va_arg(ap,USER*));
+		nullpo_ret(0,b=bl);
 	}
 
-	if (b->type == BL_PC) return 0;
-	//len+11 = type
-	len = sd->mob_len;
-	WFIFOW(sd->fd, len + 7) = SWAP16(b->x);
-	WFIFOW(sd->fd, len + 9) = SWAP16(b->y);
-	WFIFOL(sd->fd, len + 11) = SWAP32(b->id);
+	if (!session[sd->fd])
+	{
+		session[sd->fd]->eof = 8;
+		return 0;
+	}
 
-	switch (b->type) {
+//    clif_broadcast("clif_object_look_sub2", -1);
+
+//stack++;
+	WFIFOHEAD(sd->fd,6000);
+
+	if(b->type==BL_PC) return 0;
+
+	WFIFOB(sd->fd,0)=0xAA;
+	WFIFOW(sd->fd,1)=SWAP16(20);
+	WFIFOB(sd->fd,3)=0x07;
+	WFIFOB(sd->fd,4)=0x03;
+	WFIFOB(sd->fd,5)=0x00;
+	WFIFOB(sd->fd,6)=0x01;
+	//WFIFOW(sd->fd,5)=SWAP16(1);
+	WFIFOW(sd->fd,7)=SWAP16(b->x);
+	WFIFOW(sd->fd,9)=SWAP16(b->y);
+	WFIFOL(sd->fd,11)=SWAP32(b->id);
+
+
+	switch(b->type) {
+
 	case BL_MOB:
-		mob = (MOB*)b;
+		mob=(MOB*)b;
 
-		if (mob->state == MOB_DEAD || mob->data->mobtype == 1) return 0;
+		if(mob->state==MOB_DEAD || mob->data->mobtype == 1) return 0;
 
-		nlen = 0;
-		animlen = 0;
+		nlen=0;
 
 		if (mob->data->isnpc == 0) {
-			// WFIFOB(sd->fd, len + 11) = 0x05;
-			WFIFOW(sd->fd, len + 15) = SWAP16(32768 + mob->look);
-			WFIFOB(sd->fd, len + 17) = mob->look_color;
-			WFIFOB(sd->fd, len + 18) = mob->side;
-			WFIFOB(sd->fd, len + 19) = 0;
-			WFIFOB(sd->fd, len + 20) = 0; //# of animations active
-			for (x = 0; x < 50; x++) {
-				if (mob->da[x].duration && mob->da[x].animation) {
-					WFIFOW(sd->fd, nlen + len + 22) = SWAP16(mob->da[x].animation);
-					WFIFOW(sd->fd, nlen + len + 22 + 2) = SWAP16(mob->da[x].duration / 1000);
-					animlen++;
-					nlen += 4;
+//			WFIFOB(sd->fd,11)=0x05;
+			WFIFOW(sd->fd,15)=SWAP16(32768+mob->look);
+			WFIFOB(sd->fd,17)=mob->look_color;
+			WFIFOB(sd->fd,18)=mob->side;
+			WFIFOB(sd->fd,19)=0;
+			WFIFOB(sd->fd,20)=0;
+			for(x=0;x<50;x++) {
+				if(mob->da[x].duration && mob->da[x].animation) {
+					WFIFOW(sd->fd,nlen+22)=SWAP16(mob->da[x].animation);
+					WFIFOW(sd->fd,nlen+22+2)=SWAP16(mob->da[x].duration/1000);
+					nlen+=4;
 				}
 			}
 
-			WFIFOB(sd->fd, len + 21) = animlen;
-			WFIFOB(sd->fd, len + 22 + nlen) = 0; //pass flag
-			sd->mob_len += 15 + nlen;
-		}
-		else if (mob->data->isnpc == 1) {
-			// WFIFOB(sd->fd, len + 11) = 12;
-			WFIFOW(sd->fd, len + 15) = SWAP16(32768 + mob->look);
-			WFIFOB(sd->fd, len + 17) = mob->look_color;
-			WFIFOB(sd->fd, len + 18) = mob->side + 2;
-			WFIFOW(sd->fd, len + 19) = 0;
-			WFIFOB(sd->fd, len + 20) = 0;
-			WFIFOB(sd->fd, len + 21) = 0;
-			sd->mob_len += 15;
+			WFIFOB(sd->fd,21)=nlen/4;
+			WFIFOB(sd->fd,nlen+22)=0; //passflag
+			//WFIFOB(sd->fd,22)=0;
+		} else if (mob->data->isnpc == 1) {
+//			WFIFOB(sd->fd,len+11)=12;
+			WFIFOW(sd->fd,len+15)=SWAP16(32768 + mob->look);
+			WFIFOB(sd->fd,len+17)=mob->look_color;
+			WFIFOB(sd->fd,len+18)=mob->side;
+			WFIFOB(sd->fd,len+19)=0;
+			WFIFOB(sd->fd,len+20)=0;
+			WFIFOB(sd->fd,len+21)=0;
 		}
 
 		break;
 	case BL_NPC:
 		nd = (NPC*)b;
+		//npc=va_arg(ap,struct npc_data*);
 
-		if (b->subtype || nd->bl.subtype || nd->npctype == 1) return 0;
 
-		// WFIFOB(sd->fd, len + 11) = 12;
-		WFIFOW(sd->fd, len + 15) = SWAP16(32768 + b->graphic_id);
-		WFIFOB(sd->fd, len + 17) = b->graphic_color;
-		WFIFOB(sd->fd, len + 18) = nd->side + 2;//Looking down
-		WFIFOW(sd->fd, len + 19) = 0;
-		WFIFOB(sd->fd, len + 20) = 0;
-		WFIFOB(sd->fd, len + 21) = 0;
-		//WFIFOB(sd->fd,len+22)=0;
-		sd->mob_len += 15;
+		if(b->subtype || nd->npctype == 1) return 0;
+
+//    clif_broadcast("Npc is supposed to appear", -1);
+
+
+
+	WFIFOB(sd->fd,0)=0xAA;
+	WFIFOW(sd->fd,1)=SWAP16(20);
+	WFIFOB(sd->fd,3)=0x07;
+	WFIFOB(sd->fd,4)=0x03;
+	WFIFOW(sd->fd,5)=SWAP16(1);
+	WFIFOW(sd->fd,7)=SWAP16(nd->bl.x);
+	WFIFOW(sd->fd,9)=SWAP16(nd->bl.y);
+	WFIFOL(sd->fd,11)=SWAP32(nd->bl.id);
+	WFIFOW(sd->fd,15)=SWAP16(32768+nd->bl.graphic_id);
+	WFIFOB(sd->fd,17)=nd->bl.graphic_color;
+	WFIFOB(sd->fd,18)=nd->side + 2; //Looking down
+	WFIFOW(sd->fd,19)=0;
+	WFIFOB(sd->fd,20)=0;
+	WFIFOB(sd->fd,21)=0;
+
+
 		break;
+
 	case BL_ITEM:
-		item = (FLOORITEM*)b;
+		item=(FLOORITEM*)b;
 
-		int inTable = 0;
-
-		for (int j = 0; j < sizeof(item->data.trapsTable); j++) {
-			if (item->data.trapsTable[j] == sd->status.id) inTable = 1;
-		}
-
-		//printf("func 1...  name: %s, inTable: %i\n",sd->status.name,inTable);
-
-		if (itemdb_type(item->data.id) == ITM_TRAPS && !inTable) {
+		if (itemdb_type(item->data.id) == ITM_TRAPS && !(sd->spottraps)) {
 			return 0;
 		}
 
-		// WFIFOB(sd->fd, len + 11) = 0x02;
-
-		if (item->data.customIcon != 0) {
-			WFIFOW(sd->fd, len + 15) = SWAP16(item->data.customIcon + 49152);
-			WFIFOB(sd->fd, len + 17) = item->data.customIconColor;
-		}
-		else {
-			WFIFOW(sd->fd, len + 15) = SWAP16(itemdb_icon(item->data.id));
-			WFIFOB(sd->fd, len + 17) = itemdb_iconcolor(item->data.id);
-		}
-
-		WFIFOB(sd->fd, len + 18) = 0;
-		WFIFOW(sd->fd, len + 19) = 0;
-		WFIFOB(sd->fd, len + 20) = 0;
-		// WFIFOB(sd->fd, len + 21) = 0;
-		sd->mob_len += 15;
-		sd->mob_item = 1;
+        WFIFOW(sd->fd,15)=SWAP16(itemdb_icon(item->data.id));
+        WFIFOB(sd->fd,17)=itemdb_iconcolor(item->data.id);
+		WFIFOB(sd->fd,18)=0;
+		WFIFOW(sd->fd,19)=0;
+		WFIFOB(sd->fd,20)=0;
+		WFIFOB(sd->fd,21)=0;
+//      WFIFOSET(sd->fd,encrypt(sd->fd));
 		break;
 	}
-	sd->mob_count++;
+	WFIFOW(sd->fd,1)=SWAP16(21+nlen);
+    WFIFOSET(sd->fd,encrypt(sd->fd));
+	//sd->mob_count++;
 	return 0;
 }
 
@@ -3398,6 +3533,7 @@ int clif_cmoblook_sub(struct block_list* bl, va_list ap) {
 	if (mob->bl.m != sd->bl.m || mob->data->mobtype != 1 || mob->state == 1) {
 		return 0;
 	}
+
 
 	if (!session[sd->fd])
 	{
@@ -7830,23 +7966,23 @@ int clif_refresh(USER* sd) {
 	WFIFOSET(sd->fd, 5 + 3);
 	//sd->refresh_check=1;
 
-	if (!map[sd->bl.m].canGroup) {
-		char buff[256];
-		sd->status.settingFlags ^= FLAG_GROUP;
+	// if (!map[sd->bl.m].canGroup) {
+	// 	char buff[256];
+	// 	sd->status.settingFlags ^= FLAG_GROUP;
 
-		if (sd->status.settingFlags & FLAG_GROUP) { // not enabled
-			//sprintf(buff,"Join a group     :ON");
-		}
-		else {
-			if (sd->group_count > 0) {
-				clif_leavegroup(sd);
-			}
+	// 	if (sd->status.settingFlags & FLAG_GROUP) { // not enabled
+	// 		//sprintf(buff,"Join a group     :ON");
+	// 	}
+	// 	else {
+	// 		if (sd->group_count > 0) {
+	// 			clif_leavegroup(sd);
+	// 		}
 
-			sprintf(buff, "Join a group     :OFF");
-			clif_sendstatus(sd, NULL);
-			clif_sendminitext(sd, buff);
-		}
-	}
+	// 		sprintf(buff, "Join a group     :OFF");
+	// 		clif_sendstatus(sd, NULL);
+	// 		clif_sendminitext(sd, buff);
+	// 	}
+	// }
 
 	return 0;
 }
@@ -7876,23 +8012,23 @@ int clif_refreshnoclick(USER* sd)
 	set_packet_indexes(WFIFOP(sd->fd, 0));
 	WFIFOSET(sd->fd, 5 + 3);
 
-	if (!map[sd->bl.m].canGroup) {
-		char buff[256];
-		sd->status.settingFlags ^= FLAG_GROUP;
+	// if (!map[sd->bl.m].canGroup) {
+	// 	char buff[256];
+	// 	sd->status.settingFlags ^= FLAG_GROUP;
 
-		if (sd->status.settingFlags & FLAG_GROUP) { // not enabled
-			//sprintf(buff,"Join a group     :ON");
-		}
-		else {
-			if (sd->group_count > 0) {
-				clif_leavegroup(sd);
-			}
+	// 	if (sd->status.settingFlags & FLAG_GROUP) { // not enabled
+	// 		//sprintf(buff,"Join a group     :ON");
+	// 	}
+	// 	else {
+	// 		if (sd->group_count > 0) {
+	// 			clif_leavegroup(sd);
+	// 		}
 
-			sprintf(buff, "Join a group     :OFF");
-			clif_sendstatus(sd, NULL);
-			clif_sendminitext(sd, buff);
-		}
-	}
+	// 		sprintf(buff, "Join a group     :OFF");
+	// 		clif_sendstatus(sd, NULL);
+	// 		clif_sendminitext(sd, buff);
+	// 	}
+	// }
 
 	//sd->refresh_check=1;
 	return 0;
