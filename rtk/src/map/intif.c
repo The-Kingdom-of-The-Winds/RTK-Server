@@ -263,7 +263,8 @@ int intif_mmo_tosd(int fd, struct mmo_charstatus* p) {
 	pc_checklevel(sd);
 	clif_mystaytus(sd);
 	map_foreachinarea(clif_updatestate, sd->bl.m, sd->bl.x, sd->bl.y, AREA, BL_PC, sd);
-	clif_retrieveprofile(sd);
+	clif_retrieveprofile(sd);	
+
 	return 0;
 }
 int authdb_init() {
