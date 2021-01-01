@@ -3106,11 +3106,154 @@ int clif_mystaytus(USER* sd) {
 	// 	len += 1;
 	// }
 
-	//profile
-	char test_profile[] = "test profile";
-	WFIFOB(sd->fd,len + 8) = strlen(test_profile);
-	memcpy(WFIFOP(sd->fd, len + 9), test_profile, strlen(test_profile));
-	len += strlen(test_profile) + 1;
+	//profile?? group status??
+	// char test_profile[] = "test profile";
+	// WFIFOB(sd->fd,len + 8) = strlen(test_profile);
+	// memcpy(WFIFOP(sd->fd, len + 9), test_profile, strlen(test_profile));
+	// len += strlen(test_profile) + 1;
+
+	if(sd->group_count==0) {
+		WFIFOB(sd->fd,len + 8) = 2;
+		memcpy(WFIFOP(sd->fd, len + 9), " ", 2);
+		len += 1 + 2;
+		//WFIFOB(sd->fd,len+6)=0;
+		//len+=1;
+		//printf("1sd->group_count %d\n", sd->group_count);
+	} else {
+		//printf("2sd->group_count %d\n", sd->group_count);
+
+		int x, n, w, r, m, p, a, g;
+		int lenn=0;
+		int y;
+		int count;
+		char buf[32];
+		int rogue[256];
+		int warrior[256];
+		int mage[256];
+		int poet[256];
+		int peasant[256];
+		int archer[256];
+		int gm[256];
+
+		memset(rogue, 0, sizeof(int) * 256);
+		memset(warrior, 0, sizeof(int) * 256);
+		memset(mage, 0, sizeof(int) * 256);
+		memset(poet, 0, sizeof(int) * 256);
+		memset(peasant, 0, sizeof(int) * 256);
+		memset(archer, 0, sizeof(int) * 256);
+		memset(gm, 0, sizeof(int) * 256);
+
+		USER *tsd = NULL;
+		count=0;
+		if(sd->group_count==1) sd->group_count==0;
+
+		if (!session[sd->fd])
+		{
+			session[sd->fd]->eof = 8;
+			return 0;
+		}
+		char groupTxt[100];
+		int grouplen;
+		USER *leader = map_id2sd(sd->group_leader);
+		sprintf(groupTxt, "%s Group's [%d/%d]\n----------------------------\n",leader->status.name, sd->group_count,MAX_GROUP_MEMBERS);
+		for (x = 0, n = 0, w = 0, r = 0, m = 0, p = 0, a = 0, g = 0; (n + w + r + m + p + a + g) < sd->group_count; x++) {
+			tsd = map_id2sd(groups[sd->groupid][x]);
+			if(!tsd)
+				continue;
+
+			count++;
+			switch(classdb_path(tsd->status.class)) {
+				case 0:
+					peasant[n] = groups[sd->groupid][x];
+					n++;
+					break;
+				case 1:
+					warrior[w] = groups[sd->groupid][x];
+					w++;
+					break;
+				case 2:
+					rogue[r] = groups[sd->groupid][x];
+					r++;
+					break;
+				case 3:
+					mage[m] = groups[sd->groupid][x];
+					m++;
+					break;
+				case 4:
+					poet[p] = groups[sd->groupid][x];
+					p++;
+					break;
+				case 5:
+					archer[p] = groups[sd->groupid][x];
+					a++;
+					break;
+				default:
+					gm[g] = groups[sd->groupid][x];
+					g++;
+					break;
+			}
+		}
+
+		for (x = 0, n = 0, w = 0, r = 0, m = 0, p = 0, a = 0, g = 0; (n + w + r + m + p + a + g) < sd->group_count; x++) {
+			if (rogue[r] != 0) {
+				tsd = map_id2sd(rogue[r]);
+				r++;
+			} else if (warrior[w] != 0) {
+				tsd = map_id2sd(warrior[w]);
+				w++;
+			} else if (archer[p] != 0) {
+				tsd = map_id2sd(archer[p]);
+				a++;
+			} else if (mage[m] != 0) {
+				tsd = map_id2sd(mage[m]);
+				m++;
+			} else if (poet[p] != 0) {
+				tsd = map_id2sd(poet[p]);
+				p++;
+			} else if (peasant[n] != 0) {
+				tsd = map_id2sd(peasant[n]);
+				n++;
+			} else if (gm[g] != 0) {
+				tsd = map_id2sd(gm[g]);
+				g++;
+			}
+			if(!tsd)
+				continue;
+
+			switch(classdb_path(tsd->status.class)) {
+				case 0:
+					sprintf(buf, "%s (N)\0", tsd->status.name);
+					break;
+				case 1:
+					sprintf(buf, "%s (W)\0", tsd->status.name);
+					break;
+				case 2:
+					sprintf(buf, "%s (R)\0", tsd->status.name);
+					break;
+				case 3:
+					sprintf(buf, "%s (M)\0", tsd->status.name);
+					break;
+				case 4:
+					sprintf(buf, "%s (P)\0", tsd->status.name);
+					break;
+				case 5:
+					sprintf(buf, "%s (GM)\0", tsd->status.name);
+					break;
+				default:
+					sprintf(buf, "%s (GM)\0", tsd->status.name);
+					break;
+			}
+
+			sprintf(groupTxt + strlen(groupTxt), "%s\n", buf);
+
+		}
+
+
+		grouplen = strlen(groupTxt) + 1;
+		WFIFOB(sd->fd, len + 8) = grouplen;
+		memcpy(WFIFOP(sd->fd, len + 9), groupTxt, grouplen);
+		len += grouplen + 1;
+	}
 
 	if (sd->status.settingFlags & FLAG_GROUP) {
 		WFIFOB(sd->fd, len + 8) = 1; //group
@@ -11292,7 +11435,7 @@ printf("\n");*/
 
 		break;
 	case 0x1B:
-		if (sd->loaded) clif_changestatus(sd, RFIFOB(sd->fd, 6));
+		if (sd->loaded) clif_changestatus(sd, RFIFOB(sd->fd, 5));
 
 		break;
 	case 0x1C:
@@ -13730,7 +13873,7 @@ int clif_changestatus(USER* sd, int type) {
 
 	switch (type) {
 	case 0x00: //Ride/something else
-		if (RFIFOB(sd->fd, 7) == 1) {
+		if (RFIFOB(sd->fd, 6) == 1) {
 			if (sd->status.state == 0) {
 				clif_findmount(sd);
 
