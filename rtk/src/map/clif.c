@@ -4096,7 +4096,7 @@ int clif_charlook_sub(struct block_list *bl, va_list ap) { // Get_MapChar
 	if((sd->optFlags & optFlag_stealth) && !sd->status.state && (!src_sd->status.gm_level || sd->bl.id == src_sd->bl.id))
 		WFIFOB(src_sd->fd,16)=2;
 
-//	WFIFOB(src_sd->fd, 19) = sd->speed;
+	//WFIFOB(src_sd->fd, 19) = sd->speed;
 
 	if(sd->status.state==3) {
 		//WFIFOW(src_sd->fd, 17) 	= SWAP16(sd->disguise);
@@ -4109,11 +4109,11 @@ int clif_charlook_sub(struct block_list *bl, va_list ap) { // Get_MapChar
 	} else {
 		WFIFOB(src_sd->fd, 17) = sd->status.face; //face
 		WFIFOB(src_sd->fd, 18) = sd->status.hair_color; //hair color
-//		WFIFOW(src_sd->fd,11)=SWAP16(0);
+		//WFIFOW(src_sd->fd,11)=SWAP16(0);
 		//WFIFOB(src_sd->fd,19)=0;
 	}
 
-//Notsure	WFIFOB(src_sd->fd, 20) = 0;
+	//Notsure	WFIFOB(src_sd->fd, 20) = 0;
 	//if(sd->status.gm_level) WFIFOB(src_sd->fd,20)=val[0];
 
 
@@ -4204,16 +4204,16 @@ int clif_charlook_sub(struct block_list *bl, va_list ap) { // Get_MapChar
 	if((sd->status.gm_level && sd->gfx.toggle) || sd->clone) {
 		WFIFOB(src_sd->fd, 17) = sd->gfx.face;
 		WFIFOB(src_sd->fd, 18) = sd->gfx.hair;
-		WFIFOW(src_sd->fd,19)= sd->gfx.armor;
+		WFIFOW(src_sd->fd,19) = sd->gfx.armor;
 		if (sd->gfx.dye > 0) {
 			WFIFOB(src_sd->fd, 20) = sd->gfx.dye;
 		} else {
-			WFIFOB(src_sd->fd,20)=sd->gfx.carmor;
+			WFIFOB(src_sd->fd,20) = sd->gfx.carmor;
 		}
-		WFIFOW(src_sd->fd,21)=SWAP16(sd->gfx.weapon);
-		WFIFOB(src_sd->fd,23)=sd->gfx.cweapon;
-		WFIFOW(src_sd->fd,24)=sd->gfx.shield;
-		WFIFOB(src_sd->fd,25)=sd->gfx.cshield;
+		WFIFOW(src_sd->fd,21) = SWAP16(sd->gfx.weapon);
+		WFIFOB(src_sd->fd,23) = sd->gfx.cweapon;
+		WFIFOW(src_sd->fd,24) = sd->gfx.shield;
+		WFIFOB(src_sd->fd,25) = sd->gfx.cshield;
 
 
 	}
@@ -4269,18 +4269,6 @@ int clif_charspecific(int sender, int id) {
 	int x;
 	USER *sd = NULL;
 	USER *src_sd = NULL;
-	//type=va_arg(ap, int);
-
-	/*if (type==LOOK_GET) {
-		nullpo_ret(0, sd=(USER*)bl);
-		nullpo_ret(0, src_sd=va_arg(ap,USER*));
-		if (src_sd==sd)
-			return 0;
-	} else {
-		nullpo_ret(0, src_sd=(USER*)bl);
-		nullpo_ret(0, sd=va_arg(ap,USER*));
-	}
-	*/
 	nullpo_ret(0,sd=map_id2sd(sender));
 	nullpo_ret(0,src_sd=map_id2sd(id));
 
@@ -4315,7 +4303,7 @@ int clif_charspecific(int sender, int id) {
 		WFIFOB(src_sd->fd, 15)=15;
 	}
 
-	if((sd->status.state == 2 || sd->optFlags & optFlag_stealth) && sd->bl.id != src_sd->bl.id && (src_sd->status.gm_level || clif_isingroup(src_sd, sd) || (sd->bl.m >= 7010 && sd->bl.m <= 7050 && sd->status.armor_color == src_sd->status.armor_color))) {
+	if ((sd->status.state == 2 || sd->optFlags & optFlag_stealth) && sd->bl.id != src_sd->bl.id && (src_sd->status.gm_level || clif_isingroup(src_sd, sd) || (sd->gfx.dye == src_sd->gfx.dye && sd->gfx.dye != 0 && src_sd->gfx.dye != 0))) {
 		WFIFOB(src_sd->fd,16)=5; //Gm's need to see invis
 	} else {
 		WFIFOB(src_sd->fd,16)=sd->status.state;
@@ -4323,12 +4311,9 @@ int clif_charspecific(int sender, int id) {
 
 	if(sd->optFlags & optFlag_stealth && !sd->status.state && !src_sd->status.gm_level)WFIFOB(src_sd->fd,16)=2;
 
-/// Ajuster aux nouvelles valeurs
-
-
-	WFIFOB(src_sd->fd, 19) = sd->speed;
+	// WFIFOB(src_sd->fd, 19) = sd->speed;
+	
 	if(sd->status.state==3) {
-		//WFIFOW(src_sd->fd, 17) = SWAP16(sd->disguise);
 		WFIFOB(src_sd->fd, 17) = sd->status.face; //face
 
 		WFIFOB(src_sd->fd,18)=sd->status.hair_color;

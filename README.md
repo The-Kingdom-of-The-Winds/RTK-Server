@@ -1,8 +1,6 @@
 # Local RTK (Classic 5.x) Server Setup
 This document describes how to set up a local RTK (Classic 5.x) server on a PC running `Windows 10` and using [VirtualBox 6.1.8](https://download.virtualbox.org/virtualbox/6.1.8/VirtualBox-6.1.8-137981-Win.exe). Any deviations from that setup may result in procedural discrepancies.
 
-***there are still a lot of functions/packets that need to be fixed, and I don't think I have enough time to fix them all alone so contributions are highly welcomed and appreciated. - Fath***
-
 ***
 
 ## 1) Create a virtual machine
@@ -113,11 +111,11 @@ This document describes how to set up a local RTK (Classic 5.x) server on a PC r
 ***
 
 ## 6) Update the IP address in the RTK source
-1. In Windows, use any text editor to open the `/rtk/conf/map.conf.example` file from your copy of the RTK repository and rename to `/rtk/conf/map.conf`
+1. In Windows, use any text editor to open the `/rtk/conf/map.conf.example` file from your copy of the RTK repository, copy and rename to `/rtk/conf/map.conf`
 2. Edit the values for `map_ip` and `loginip` to use the IP address obtained in step 5.8
    - e.g. `map_ip: 192.168.56.104`
    - e.g. `loginip: 192.168.56.104`
-3. Rename `/rtk/conf/char.conf.example` to `/rtk/conf/char.conf` then add your database information.
+3. Copy and rename `/rtk/conf/char.conf.example` to `/rtk/conf/char.conf` then add your database information.
 4. Save the file, and the update will automatically sync to your VM via the shared folder configured in step 4
 
 ***
