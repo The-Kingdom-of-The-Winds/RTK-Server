@@ -225,8 +225,6 @@ int intif_mmo_tosd(int fd, struct mmo_charstatus* p) {
 	clif_sendtime(sd);
 	clif_sendid(sd);
 	clif_sendmapinfo(sd);
-	clif_sendstatus(sd, SFLAG_FULLSTATS | SFLAG_HPMP | SFLAG_XPMONEY);
-	clif_mystaytus(sd);
 	clif_spawn(sd);
 	clif_refresh(sd);
 	clif_sendxy(sd);
@@ -258,11 +256,11 @@ int intif_mmo_tosd(int fd, struct mmo_charstatus* p) {
 		//sd->optFlags|=optFlag_stealth;
 		//printf("GM(%s) set to stealth.\n",sd->status.name);
 	}
-
-	pc_calcstat(sd);
-	pc_checklevel(sd);
+	clif_sendstatus(sd, SFLAG_FULLSTATS | SFLAG_HPMP | SFLAG_XPMONEY);
 	clif_mystaytus(sd);
+	pc_calcstat(sd);
 	map_foreachinarea(clif_updatestate, sd->bl.m, sd->bl.x, sd->bl.y, AREA, BL_PC, sd);
+	pc_checklevel(sd);
 	clif_retrieveprofile(sd);	
 
 	return 0;
