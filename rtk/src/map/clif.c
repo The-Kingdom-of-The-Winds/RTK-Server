@@ -8643,10 +8643,10 @@ int clif_sendanimation(struct block_list* bl, va_list ap) {
 		WFIFOHEAD(sd->fd, 13);
 		WFIFOB(sd->fd, 0) = 0xAA;
 		WFIFOW(sd->fd, 1) = SWAP16(0x0A);
-		WFIFOB(sd->fd, 3) = 0x29;
+		WFIFOB(sd->fd, 3) = 41; //0x29;
 		WFIFOL(sd->fd, 5) = SWAP32(t->id);
-		WFIFOW(sd->fd, 9) = SWAP16(anim);
-		WFIFOW(sd->fd, 11) = SWAP16(times);
+		WFIFOW(sd->fd, 9) = anim; //SWAP16(anim);
+		WFIFOW(sd->fd, 10) = SWAP16(times);
 		WFIFOSET(sd->fd, encrypt(sd->fd));
 	}
 
@@ -8664,11 +8664,11 @@ int clif_animation(USER* src, USER* sd, int animation, int duration) {
 	if (src->status.settingFlags & FLAG_MAGIC) {
 		WFIFOB(src->fd, 0) = 0xAA;
 		WFIFOW(src->fd, 1) = SWAP16(0x0A);
-		WFIFOB(src->fd, 3) = 0x29;
+		WFIFOB(src->fd, 3) = 41;//0x29;
 		WFIFOB(src->fd, 4) = 0x03;
 		WFIFOL(src->fd, 5) = SWAP32(sd->bl.id);
-		WFIFOW(src->fd, 9) = SWAP16(animation);
-		WFIFOW(src->fd, 11) = SWAP16(duration / 1000);
+		WFIFOW(src->fd, 9) = animation; //SWAP16(animation);
+		WFIFOW(src->fd, 10) = SWAP16(duration / 1000);
 		WFIFOSET(src->fd, encrypt(src->fd));
 	}
 	return 0;
