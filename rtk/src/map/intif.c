@@ -596,7 +596,7 @@ int intif_parse_userlist(int fd) {
 	WFIFOHEAD(sd->fd, 0);
 	WFIFOB(sd->fd, 0) = 0xAA;
 	WFIFOB(sd->fd, 3) = 0x36;
-	//WFIFOB(sd->fd,4)=0x01;
+	WFIFOB(sd->fd,4) = 0x03;
 	WFIFOW(sd->fd, 5) = SWAP16(count); //total users
 	WFIFOW(sd->fd, 7) = SWAP16(count); //users on server
 
@@ -607,12 +607,12 @@ int intif_parse_userlist(int fd) {
 	//testing//
 
 	for (i = 0; i < count; i++) {
-		hunter = RFIFOW(fd, i * 22 + 10);
-		class = RFIFOW(fd, i * 22 + 12);
-		mark = RFIFOW(fd, i * 22 + 14);
-		clan = RFIFOW(fd, i * 22 + 16);
-		nation = RFIFOW(fd, i * 22 + 18);
-		memcpy(name, RFIFOP(fd, i * 22 + 20), 16);
+		// hunter = RFIFOW(fd, i * 22 + 10);
+		class = RFIFOW(fd, i * 22 + 10);
+		mark = RFIFOW(fd, i * 22 + 12);
+		clan = RFIFOW(fd, i * 22 + 14);
+		nation = RFIFOW(fd, i * 22 + 16);
+		memcpy(name, RFIFOP(fd, i * 22 + 18), 16);
 
 		if (class > 4) {
 			path = classdb_path(class);
@@ -638,8 +638,8 @@ int intif_parse_userlist(int fd) {
 		WFIFOB(sd->fd, len + 1) = (16 * mark) + classdb_icon(class);
 		//printf("16*mark= %u, classdb_icon = %i\n",16*mark,classdb_icon(class));
 
-		WFIFOB(sd->fd, len + 2) = hunter; // hunter flag
-
+		//WFIFOB(sd->fd, len + 2) = hunter; // hunter flag
+		len -= 1;
 		// Color Flag
 		WFIFOB(sd->fd, len + 3) = 143; // white
 		if (sd->status.clan && sd->status.clan == clan) WFIFOB(sd->fd, len + 3) = 63; // Greenish

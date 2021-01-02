@@ -1093,9 +1093,10 @@ int clif_sendtowns(USER* sd) {
 	//WFIFOW(sd->fd,1)=SWAP16(0x13);
 	WFIFOB(sd->fd, 3) = 0x59;
 	//WFIFOB(sd->fd,4)=0x03;
-	WFIFOB(sd->fd, 5) = 64;
-	WFIFOW(sd->fd, 6) = 0;
-	WFIFOB(sd->fd, 8) = 34;
+	WFIFOB(sd->fd, 5) = 1;
+	WFIFOW(sd->fd, 6) = 1;
+	WFIFOB(sd->fd, 7) = 1;
+	WFIFOB(sd->fd, 8) = 0;
 	WFIFOB(sd->fd, 9) = town_n; //Town count
 	for (x = 0; x < town_n; x++) {
 		WFIFOB(sd->fd, len + 10) = x;
@@ -4737,31 +4738,15 @@ int clif_sendxychange(USER* sd, int dx, int dy) {
 }
 
 int clif_sendstatus(USER* sd, int flags) {
-	int f=flags|SFLAG_ALWAYSON;
+	int f = flags | SFLAG_ALWAYSON;
 	int path,level;
 	int tnl,helper;
-	float percentage;
 	int len=0;
-// Experimental
-//  	struct mmo_charstatus* t =(struct mmo_charstatus*)session[sd->fd]->session_data;
-//
 	nullpo_ret(0,sd);
 
-	if(sd->status.gm_level && sd->optFlags & optFlag_walkthrough)
+	if (sd->status.gm_level && sd->optFlags & optFlag_walkthrough)
 		f |= SFLAG_GMON;
-		path=sd->status.class;
-	level=sd->status.level;
-	if (path > 5) path = classdb_path(path);
-	//if(level<50) {
-	//	helper=classdb_level(path,level);
-	//	helper-=classdb_level(path,level-1);
-	//	tnl=classdb_level(path,level)-(sd->status.exp);
-	//	percentage=(((float)(helper-tnl))/(helper))*100;
-		//printf("Helper: %d\n",helper);
-		//printf("Tnl: %d\n",tnl);
-	//} else {
-		percentage=((float)sd->status.exp/4294967295)*100;
-	//}
+
 	if (!session[sd->fd])
 	{
 		session[sd->fd]->eof = 8;
@@ -4772,17 +4757,12 @@ int clif_sendstatus(USER* sd, int flags) {
 	WFIFOB(sd->fd,0)=0xAA;
 	WFIFOB(sd->fd,3)=OUT_STATUS;
 	WFIFOB(sd->fd,4)=0x03;
-	WFIFOB(sd->fd,5)=f;
-//printf("f: %d\n", f);
-// Still bug to show vita/mana/ac/dam/hit in the click menu when character connect
+	WFIFOB(sd->fd,5) = f;
 
 	if(f & SFLAG_FULLSTATS) {
 		WFIFOB(sd->fd,6) = sd->status.country; // 0.netral 1.koguryo 2.buya
-     // Implement correctly later
-//		WFIFOB(sd->fd,7) = sd->status.side;// Side of the character?
-//		WFIFOB(sd->fd,8) = t.totem; // -- Totem -- 0=JuJak, 1= Baekho, 2=Hyun Moo, 3=Chung Ryong, 4=Nothing
 		WFIFOB(sd->fd,7) = sd->status.totem; // -- Totem -- 0=JuJak, 1= Baekho, 2=Hyun Moo, 3=Chung Ryong, 4=Nothing
-		WFIFOB(sd->fd,8) = 0;// ??
+		WFIFOB(sd->fd,8) = 0; // ??
 		WFIFOB(sd->fd,9) = sd->status.level;
 		WFIFOL(sd->fd,10) = SWAP32(sd->max_hp);
 		WFIFOL(sd->fd,14) = SWAP32(sd->max_mp);
@@ -4791,14 +4771,13 @@ int clif_sendstatus(USER* sd, int flags) {
 		WFIFOB(sd->fd, 20) = 0x03;
 		WFIFOB(sd->fd, 21) = 0x03;
 		WFIFOB(sd->fd, 22) = sd->grace;
-		WFIFOB(sd->fd, 23) = 0;
-		//WFIFOB(sd->fd, 24) = sd->status.country; //??
-		WFIFOB(sd->fd, 25) = 0;
-		WFIFOB(sd->fd, 26) = 0;
-		WFIFOB(sd->fd, 27) = 0;
-		WFIFOB(sd->fd, 28) = 1;
-//		WFIFOB(sd->fd, 34) = sd->status.maxinv; // Dunno where the fuck to put it now
-		len+=23;
+		// WFIFOB(sd->fd, 23) = 0;
+		// WFIFOB(sd->fd, 24) = 0;
+		// WFIFOB(sd->fd, 25) = 0;
+		// WFIFOB(sd->fd, 26) = 0; 
+		// WFIFOB(sd->fd, 27) = 0;
+		// WFIFOB(sd->fd, 28) = 1;
+		len += 23;
 	}
 
 	if(f & SFLAG_HPMP) {
@@ -4808,10 +4787,9 @@ int clif_sendstatus(USER* sd, int flags) {
 	}
 
 	if(f & SFLAG_XPMONEY) {
-			WFIFOL(sd->fd, len+6) = SWAP32(sd->status.exp);
-			WFIFOL(sd->fd, len+10) = SWAP32(sd->status.money);
-//			WFIFOB(sd->fd, len+14) = (int)percentage; //exp percent shown in bar (not in 5.33?)
-			len+=8;
+		WFIFOL(sd->fd, len+6) = SWAP32(sd->status.exp);
+		WFIFOL(sd->fd, len+10) = SWAP32(sd->status.money);
+		len+=8;
 	}
 
 	WFIFOB(sd->fd, len+6) = sd->drunk;
@@ -4821,15 +4799,15 @@ int clif_sendstatus(USER* sd, int flags) {
 	WFIFOB(sd->fd, len+10) = 0;
 	WFIFOB(sd->fd, len+11) = sd->flags; //1=New parcel, 16=new Message, 17=New Parcel + Message
 	WFIFOB(sd->fd, len+12) = 0; //nothing
-	WFIFOL(sd->fd,len+13)=SWAP32(sd->status.settingFlags);
-	len+=11;
+	WFIFOL(sd->fd, len+13) = SWAP32(sd->status.settingFlags);
+	len += 11;
 
-	WFIFOW(sd->fd,1)=SWAP16(len+3);
+	WFIFOW(sd->fd,1)=SWAP16(len + 3);
 	WFIFOSET(sd->fd, encrypt(sd->fd));
 
-	if(sd->group_count>0) {
-		clif_grouphealth_update(sd);
-	}
+	// if(sd->group_count>0) {
+	// 	clif_grouphealth_update(sd);
+	// }
 
 	return 0;
 }
@@ -8246,12 +8224,12 @@ int clif_sendupdatestatus(USER* sd) {
 		return 0;
 	}
 
-	WFIFOHEAD(sd->fd, 33);
+	WFIFOHEAD(sd->fd,33);
 	WFIFOB(sd->fd, 0) = 0xAA;
 	WFIFOB(sd->fd, 1) = 0x00;
 	WFIFOB(sd->fd, 2) = 0x1C;
 	WFIFOB(sd->fd, 3) = 0x08;
-	//WFIFOB(sd->fd, 4) = 0x03;
+	WFIFOB(sd->fd, 4) = 0x03;
 	WFIFOB(sd->fd, 5) = 0x38;
 	WFIFOL(sd->fd, 6) = SWAP32(sd->status.hp);
 	WFIFOL(sd->fd, 10) = SWAP32(sd->status.mp);
@@ -8260,8 +8238,8 @@ int clif_sendupdatestatus(USER* sd) {
 	WFIFOL(sd->fd, 22) = 0x00;
 	WFIFOB(sd->fd, 26) = 0x00;
 	WFIFOB(sd->fd, 27) = 0x00;
-	WFIFOB(sd->fd, 28) = sd->blind;
-	WFIFOB(sd->fd, 29) = sd->drunk;
+	WFIFOB(sd->fd, 28) = 0x01;
+	WFIFOB(sd->fd, 29) = 0x00;
 	WFIFOB(sd->fd, 30) = 0x00;
 	WFIFOB(sd->fd, 31) = 0x73;
 	WFIFOB(sd->fd, 32) = 0x35;

@@ -496,18 +496,18 @@ int mapif_parse_userlist(int fd) {
 
 	for (x = 0; x < WFIFOW(fd, 8) && SQL_SUCCESS == SqlStmt_NextRow(stmt); x++)
 	{
-		WFIFOW(fd, x * 22 + 10) = hunter;
-		WFIFOW(fd, x * 22 + 12) = class;
-		WFIFOW(fd, x * 22 + 14) = mark;
-		WFIFOW(fd, x * 22 + 16) = clan;
-		WFIFOW(fd, x * 22 + 18) = nation;
-		memcpy(WFIFOP(fd, x * 22 + 20), name, 16);
+		WFIFOW(fd, x * 22 + 10) = class; //hunter;
+		WFIFOW(fd, x * 22 + 12) = mark; //class;
+		WFIFOW(fd, x * 22 + 14) = clan; //mark;
+		WFIFOW(fd, x * 22 + 16) = nation; //clan;
+		// WFIFOW(fd, x * 22 + 18) = nation;
+		memcpy(WFIFOP(fd, x * 22 + 18), name, 16);
 	}
 
 	SqlStmt_Free(stmt);
 
-	WFIFOL(fd, 2) = WFIFOW(fd, 8) * 22 + 36;
-	WFIFOSET(fd, WFIFOW(fd, 8) * 22 + 36);
+	WFIFOL(fd, 2) = WFIFOW(fd, 8) * 22 + 10;
+	WFIFOSET(fd, WFIFOW(fd, 8) * 22 + 10);
 
 	return 0;
 }
