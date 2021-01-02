@@ -11870,7 +11870,6 @@ int clif_updatestate(struct block_list *bl, va_list ap) {
 		WFIFOB(src_sd->fd,9)=1;
 		WFIFOB(src_sd->fd,10)=15;
 		WFIFOB(src_sd->fd,11)=sd->status.state;
-// Dunno what to do with it anymore
 		WFIFOW(src_sd->fd,12)=SWAP16(sd->disguise+32768);
 		WFIFOB(src_sd->fd,14)=sd->disguise_color;
 
@@ -11889,7 +11888,7 @@ int clif_updatestate(struct block_list *bl, va_list ap) {
 	} else {
 		WFIFOW(src_sd->fd,9)=SWAP16(sd->status.sex);
 
-		if((sd->status.state == 2 || (sd->optFlags & optFlag_stealth)) && sd->bl.id != src_sd->bl.id && (src_sd->status.gm_level || clif_isingroup(src_sd, sd) || (sd->bl.m >= 7010 && sd->bl.m <= 7050 && sd->status.armor_color == src_sd->status.armor_color))) {
+		if ((sd->status.state == 2 || (sd->optFlags & optFlag_stealth)) && sd->bl.id != src_sd->bl.id && (src_sd->status.gm_level || clif_isingroup(src_sd, sd) || (sd->gfx.dye == src_sd->gfx.dye && sd->gfx.dye != 0 && src_sd->gfx.dye != 0))) {
 			WFIFOB(src_sd->fd,11)=5; //Gm's need to see invis
 		} else {
 			WFIFOB(src_sd->fd,11)=sd->status.state;
@@ -11903,13 +11902,13 @@ int clif_updatestate(struct block_list *bl, va_list ap) {
 			WFIFOW(src_sd->fd,12)=SWAP16(0);
 		}
 
-	//	WFIFOB(src_sd->fd,10)=sd->speed;
-//		WFIFOB(src_sd->fd, 15) = 0;
+		//WFIFOB(src_sd->fd,10)=sd->speed;
+		//WFIFOB(src_sd->fd, 15) = 0;
 		WFIFOB(src_sd->fd, 12) = sd->status.face; //face
-//		WFIFOB(src_sd->fd, 17) = sd->status.hair; //hair
+		//WFIFOB(src_sd->fd, 17) = sd->status.hair; //hair
 		WFIFOB(src_sd->fd, 13) = sd->status.hair_color; //hair color
-//		WFIFOB(src_sd->fd, 19) = sd->status.face_color;
-//		WFIFOB(src_sd->fd, 20) =sd->status.skin_color;
+		//WFIFOB(src_sd->fd, 19) = sd->status.face_color;
+		//WFIFOB(src_sd->fd, 20) =sd->status.skin_color;
 		//WFIFOB(src_sd->fd,21)=0;
 
 	//armor
@@ -12004,6 +12003,8 @@ int clif_updatestate(struct block_list *bl, va_list ap) {
 			WFIFOW(src_sd->fd,27)=SWAP16(sd->gfx.shield);
 			WFIFOB(src_sd->fd,29)=sd->gfx.cshield;
 
+			clif_getchararea(sd);
+			clif_sendchararea(sd);
 
 		}
 
@@ -12046,6 +12047,7 @@ int clif_updatestate(struct block_list *bl, va_list ap) {
 	/*if(src_sd->bl.id==sd->bl.id) {
 		pc_warp(sd,sd->bl.m,sd->bl.x,sd->bl.y);
 	}*/
+
 	return 0;
 }
 
@@ -13213,18 +13215,13 @@ int clif_clickonplayer(USER* sd, struct block_list* bl) {
 	WFIFOL(sd->fd,len + 5)=SWAP32(bl->id);
 	len += 4;
 
-	if (strlen(equip_status) == 0) {
-		strcat(equip_status, "No items equipped.");
-	}
-
-
 	if (tsd->status.settingFlags & FLAG_GROUP) {
 		WFIFOB(sd->fd, len + 5) = 1;
 	}
 	else {
 		WFIFOB(sd->fd, len + 5) = 0;
 	}
-
+	len += 1;
 	if (tsd->status.settingFlags & FLAG_EXCHANGE) {
 		WFIFOB(sd->fd, len + 5) = 1;
 	}
@@ -13232,7 +13229,7 @@ int clif_clickonplayer(USER* sd, struct block_list* bl) {
 		WFIFOB(sd->fd, len + 5) = 0;
 	}
 
-	len += 2;
+	len += 1;
 
 	WFIFOB(sd->fd, len + 5) = 1;
 	len += 1;
