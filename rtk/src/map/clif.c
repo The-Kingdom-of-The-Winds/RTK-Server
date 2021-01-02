@@ -1827,12 +1827,12 @@ int clif_object_look_sub(struct block_list* bl, va_list ap) {
 		WFIFOB(sd->fd,18)=0;
 		WFIFOW(sd->fd,19)=0;
 		WFIFOB(sd->fd,20)=0;
-		WFIFOB(sd->fd,21)=0;
+		// WFIFOB(sd->fd,21)=0;
 //      WFIFOSET(sd->fd,encrypt(sd->fd));
 		break;
 	}
 	
-	WFIFOW(sd->fd,1)=SWAP16(21+nlen);
+	WFIFOW(sd->fd,1)=SWAP16(18+nlen);
     WFIFOSET(sd->fd,encrypt(sd->fd));
 	//sd->mob_count++;
 	return 0;
@@ -1945,7 +1945,7 @@ int clif_object_look_sub2(struct block_list* bl, va_list ap) {
 			return 0;
 		}
 
-		WFIFOB(sd->fd, 11) = 0x02;
+		// WFIFOB(sd->fd, 11) = 0x02;
 
 		if (item->data.customIcon != 0)
 		{
@@ -1964,7 +1964,7 @@ int clif_object_look_sub2(struct block_list* bl, va_list ap) {
 		WFIFOB(sd->fd, 21) = 0;
 		break;
 	}
-	WFIFOW(sd->fd, 1) = SWAP16(21 + nlen);
+	WFIFOW(sd->fd, 1) = SWAP16(18 + nlen);
 	WFIFOSET(sd->fd, encrypt(sd->fd));
 	//sd->mob_count++;
 	return 0;
