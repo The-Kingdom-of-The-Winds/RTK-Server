@@ -3027,7 +3027,8 @@ int clif_mystaytus(USER* sd) {
 	char* class_name = NULL;
 	char* name = NULL;
 	char* partner = NULL;
-
+	char equip_status[65535];
+	int equip_len=0;
 	int tnl = clif_getLevelTNL(sd);
 	int len = 0;
 	nullpo_ret(0, sd);
@@ -3375,7 +3376,16 @@ int clif_mystaytus(USER* sd) {
 	// WFIFOB(sd->fd, len) = 0;
 	// len += 1;
 
-	len += 7;
+	len += 6;
+
+	if(strlen(equip_status)==0) {
+		strcat(equip_status,"status");
+	}
+	equip_len = strlen(equip_status);
+	if(equip_len>255) equip_len=255;
+	WFIFOB(sd->fd,len + 8) = equip_len;
+	strcpy(WFIFOP(sd->fd,len + 9), equip_status);
+	len += equip_len + 1;
 
 	if (sd->status.settingFlags & FLAG_EXCHANGE) {
 		WFIFOB(sd->fd, len + 8) = 1;
